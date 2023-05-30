@@ -199,6 +199,8 @@ class TestCasesContainer:
                 test.testPass()
             except Assert.TestFailException as fail:
                 test.testFail(fail)
+            except Exception as exception:
+                test.testFail(exception)
             finally:
                 context.FinishTest()
         self.summary()
