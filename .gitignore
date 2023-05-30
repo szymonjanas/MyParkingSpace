@@ -2,3 +2,4 @@ Sources/Backend/__pycache__/
 Sources/logs/*
 Sources/database/*
 */__pycache__/
+BackendSystemTests/Testing/__pycache__/
