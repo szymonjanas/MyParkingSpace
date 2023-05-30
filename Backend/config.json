@@ -1,0 +1,7 @@
+{
+    "defaults" :
+    {
+        "sqliteDatabasePath" : "Backend/database/backend.db",
+        "logsFilePath" : "logs/backend.log"
+    }
+}

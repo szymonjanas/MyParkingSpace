@@ -7,13 +7,16 @@ class DatabaseService:
     dbConnection = None
 
     def __init__(self):
-        LOG.debug("Database version: {}".format(sqlite3.version))
+        LOG.info("Database version: {}".format(sqlite3.version))
+
+    def __del__(self):
+        self.disconnect()
 
     def connect(self, dbFileName):
         LOG.debug("Connecting database to: {}".format(dbFileName))
         try:
             self.dbConnection = sqlite3.connect(dbFileName)
-            LOG.debug("Database connected: {}".format(dbFileName))
+            LOG.info("Database connected: {}".format(dbFileName))
         except Exception as err:
             LOG.exception(err)
             self.disconnect()
@@ -21,4 +24,4 @@ class DatabaseService:
     def disconnect(self):
         if self.dbConnection:
             self.dbConnection.close()
-            LOG.debug("Database connection closed!")
+            LOG.info("Database connection closed!")
