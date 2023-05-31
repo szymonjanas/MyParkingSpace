@@ -9,9 +9,6 @@ class DatabaseService:
     def __init__(self):
         LOG.info("Database version: {}".format(sqlite3.version))
 
-    def __del__(self):
-        self.disconnect()
-
     def connect(self, dbFileName):
         LOG.debug("Connecting database to: {}".format(dbFileName))
         try:
@@ -24,4 +21,5 @@ class DatabaseService:
     def disconnect(self):
         if self.dbConnection:
             self.dbConnection.close()
+            self.dbConnection = None
             LOG.info("Database connection closed!")

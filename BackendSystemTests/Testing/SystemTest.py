@@ -3,6 +3,7 @@ import logging
 import os
 import subprocess
 import time
+import requests
 
 LOGS_FILE_PATH = "logs/SystemTestOutput.log"
 PORT = "5566"
@@ -17,7 +18,7 @@ logging.basicConfig(
         logging.StreamHandler()
     ],
     level=logging.DEBUG)
-LOG = logging.getLogger()
+LOG = logging.getLogger(__name__)
 
 class TestOutcome:
     testStatus = True
@@ -34,6 +35,7 @@ class TestCaseContext:
     SUT = None
     URL = ""
     logFilePath = ""
+    serverConnectionRetries = 0
 
     def __init__(self, ipAddress, port, logFilePath):
         self.ipAddress = ipAddress
@@ -45,6 +47,28 @@ class TestCaseContext:
     def getTestOutcome(self):
         return self.testOutcome
 
+    def isServerOnline(self):
+        try:
+            return "Hello World!" == requests.get(self.URL + "helloworld").text
+        except ConnectionError:
+            return False
+
+    def __turn_off_requests_logging__(self):
+        logging.getLogger("urllib3").propagate = False
+
+    def __turn_on_requests__logging__(self):
+        logging.getLogger("urllib3").propagate = True
+
+    def connectToBackend(self):
+        self.__turn_off_requests_logging__()
+        while not self.isServerOnline():
+            time.sleep(0.1)
+            self.serverConnectionRetries += 1
+            if self.serverConnectionRetries > 30:
+                raise ConnectionError("SystemTest could not connect to server after {} retries!"
+                                        .format(self.serverConnectionRetries))
+        self.__turn_on_requests__logging__()
+
     def InitTest(self):
         self.SUT = subprocess.Popen(
             ["py", "Backend", 
@@ -54,12 +78,12 @@ class TestCaseContext:
             shell=True,
             stdout=subprocess.DEVNULL,
             stderr=subprocess.DEVNULL)
-        time.sleep(5) # wait until server is ready
+        self.connectToBackend()
+        LOG.info("SystemTest connected to Backend Server successfully!")
 
     def FinishTest(self):
         if self.SUT:
             self.SUT.terminate()
-            self.SUT.kill()
             self.SUT.wait()
 
 class TestCaseContextGenerator:
@@ -199,6 +223,8 @@ class TestCasesContainer:
                 test.testPass()
             except Assert.TestFailException as fail:
                 test.testFail(fail)
+            except ConnectionError as connectionError:
+                test.testFail(connectionError)
             except Exception as exception:
                 test.testFail(exception)
             finally:

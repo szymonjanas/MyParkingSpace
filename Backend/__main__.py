@@ -16,6 +16,8 @@ hostApi.register_blueprint(ConnectionTestService.api_connectionTestService)
 def RUN_APPLICATION(hostIpAddress, port, logFilePath):
     if not logFilePath:
         logFilePath = configs["defaults"]["logsFilePath"]
+    if os.path.exists(logFilePath):
+        os.remove(logFilePath)
     loggingConfig.loadConfig(logFilePath)
     LOG = logging.getLogger(__name__)
     LOG.info('Hello world!')
@@ -30,6 +32,8 @@ def RUN_APPLICATION(hostIpAddress, port, logFilePath):
         host = hostIpAddress,
         port = port
     )
+
+    database.disconnect()
 
 if __name__ == "__main__":
 
