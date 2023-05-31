@@ -4,6 +4,7 @@ import os
 import subprocess
 import time
 import requests
+import psutil
 
 LOGS_FILE_PATH = "logs/SystemTestOutput.log"
 PORT = "5566"
@@ -46,6 +47,7 @@ class TestCaseContext:
         self.logFilePath = logFilePath
         self.testOutcome = TestOutcome(True, "")
         self.URL = "http://{}:{}/".format(ipAddress, port)
+        self.serverConnectionRetries = 0
 
     def getTestOutcome(self):
         return self.testOutcome
@@ -54,6 +56,8 @@ class TestCaseContext:
         try:
             return "Hello World!" == requests.get(self.URL + "helloworld").text
         except ConnectionError:
+            return False
+        except requests.exceptions.ConnectionError:
             return False
 
     def __turn_off_requests_logging__(self):
@@ -72,6 +76,12 @@ class TestCaseContext:
                                         .format(self.serverConnectionRetries))
         self.__turn_on_requests__logging__()
 
+    def __kill_process__(self, proc_pid):
+        process = psutil.Process(proc_pid)
+        for proc in process.children(recursive=True):
+            proc.kill()
+        process.kill()
+
     def InitTest(self):
         self.SUT = subprocess.Popen(
             ["py", "Backend", 
@@ -86,8 +96,10 @@ class TestCaseContext:
 
     def FinishTest(self):
         if self.SUT:
-            self.SUT.terminate()
-            self.SUT.wait()
+            try:
+                self.SUT.wait(timeout=3)
+            except subprocess.TimeoutExpired:
+                self.__kill_process__(self.SUT.pid)
 
 class TestCaseContextGenerator:
     __ip_address_default__ = "127.0.0.0"
