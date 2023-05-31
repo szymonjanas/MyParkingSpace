@@ -8,9 +8,10 @@ import psutil
 
 LOGS_FILE_PATH = "logs/SystemTestOutput.log"
 PORT = "5566"
+PYTHON_RUNNER = "py"
 
-if os.path.exists(LOGS_FILE_PATH):
-    os.remove(LOGS_FILE_PATH)
+with open(LOGS_FILE_PATH, "w") as file:
+    pass
 
 logging.basicConfig(
     format='[%(asctime)s] %(message)s',
@@ -23,6 +24,23 @@ LOG = logging.getLogger()
 
 def set_log_level(logLevel):
     LOG.setLevel(logLevel)
+
+_linux_ = 1
+_windows_ = 2
+__system__ = _windows_
+def set_os(system):
+    global __system__, _linux_
+    if system == _linux_:
+        __system__ = _linux_
+        LOG.debug("Running system tests on linux!")
+
+def __get_python_run_command__():
+    global __system__, _linux_, _windows_
+    if __system__ == _linux_:
+        return "python3"
+    if __system__ == _windows_:
+        return "py"
+
 
 class TestOutcome:
     testStatus = True
@@ -83,14 +101,21 @@ class TestCaseContext:
         process.kill()
 
     def InitTest(self):
-        self.SUT = subprocess.Popen(
-            ["py", "Backend", 
+        cmd = [__get_python_run_command__(), "Backend", 
              "--ipaddress", self.ipAddress,
              "--logfilepath", self.logFilePath
-             ],
-            shell=True,
-            stdout=subprocess.DEVNULL,
-            stderr=subprocess.DEVNULL)
+             ]
+        if LOG.level == LOG.debug:
+            self.SUT = subprocess.Popen(
+                cmd,
+                shell=False)
+        else:
+            self.SUT = subprocess.Popen(
+                cmd,
+                shell=False,
+                stdout=subprocess.DEVNULL,
+                stderr=subprocess.DEVNULL)
+        LOG.debug("Test run with command: {}".format(" ".join(cmd)))
         self.connectToBackend()
         LOG.debug("SystemTest connected to Backend Server successfully!")
 

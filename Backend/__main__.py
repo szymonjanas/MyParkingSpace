@@ -2,9 +2,10 @@ import sys, json, os
 import logging
 import loggingConfig
 import DatabaseConnector as dbService
-import DatabaseFacade
+import Database
 from flask import Flask
 import ConnectionTestService
+import AdmissionControlService
 
 configs = None
 with open("Backend/config.json") as configFile:
@@ -13,12 +14,13 @@ with open("Backend/config.json") as configFile:
 
 hostApi = Flask("MyParkingSpaceServer")
 hostApi.register_blueprint(ConnectionTestService.api_connectionTestService)
+# hostApi.register_blueprint(AdmissionControlService.api_admissionControlService)
 
-def RUN_APPLICATION(hostIpAddress, port, logFilePath):
+def RUN_APPLICATION(hostIpAddress, port, logFilePath : str):
     if not logFilePath:
         logFilePath = configs["defaults"]["logsFilePath"]
-    if os.path.exists(logFilePath):
-        os.remove(logFilePath)
+    with open(logFilePath, "w") as file:
+        pass
     loggingConfig.loadConfig(logFilePath)
     LOG = logging.getLogger(__name__)
     LOG.info('Hello world!')
@@ -26,7 +28,7 @@ def RUN_APPLICATION(hostIpAddress, port, logFilePath):
     database = dbService.DatabaseConnector()
     database.connect(configs["defaults"]["sqliteDatabasePath"]) # TODO add database path option from argv
 
-    DatabaseFacade.init_database(DatabaseFacade.DatabaseFacade(database))
+    # Database.init_database(Database.DatabaseFacade(database))
 
     if not hostIpAddress:
         hostIpAddress = "127.0.0.1"

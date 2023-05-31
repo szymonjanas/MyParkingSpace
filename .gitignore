@@ -1,5 +1,5 @@
 Backend/__pycache__/
-logs/*
+logs/*.log
 Backend/database/*
 */__pycache__/
 BackendSystemTests/Testing/__pycache__/

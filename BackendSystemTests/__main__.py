@@ -24,6 +24,8 @@ if __name__ == "__main__":
             testLogLevel = sys.argv[i+1]
             testLogLevel = convertLogLevel(testLogLevel)
             i+=1
+        if sys.argv[i] == "--linux":
+            SystemTest.set_os(SystemTest._linux_)
 
     if testLogLevel:
         SystemTest.set_log_level(testLogLevel)
