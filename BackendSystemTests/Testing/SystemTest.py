@@ -1,6 +1,6 @@
 from Testing import Assert
 import logging
-import os
+import sys
 import subprocess
 import time
 import requests
@@ -260,6 +260,9 @@ class TestCasesContainer:
             lenFailed,
             percentFailed
         ))
+
+        if lenFailed > 0:
+            sys.exit('At least one of System Test failed!')
 
     def execute(self, selected = None):
         global PORT

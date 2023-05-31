@@ -3,3 +3,4 @@ logs/*.log
 Backend/database/*
 */__pycache__/
 BackendSystemTests/Testing/__pycache__/
+logs/*/*.log
