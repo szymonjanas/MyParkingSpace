@@ -18,7 +18,10 @@ logging.basicConfig(
         logging.StreamHandler()
     ],
     level=logging.DEBUG)
-LOG = logging.getLogger(__name__)
+LOG = logging.getLogger()
+
+def set_log_level(logLevel):
+    LOG.setLevel(logLevel)
 
 class TestOutcome:
     testStatus = True
@@ -79,7 +82,7 @@ class TestCaseContext:
             stdout=subprocess.DEVNULL,
             stderr=subprocess.DEVNULL)
         self.connectToBackend()
-        LOG.info("SystemTest connected to Backend Server successfully!")
+        LOG.debug("SystemTest connected to Backend Server successfully!")
 
     def FinishTest(self):
         if self.SUT:
@@ -183,6 +186,13 @@ class TestCasesContainer:
                 output.append(test)
         return output
 
+    def map(self, func):
+        newContainer = []
+        for test in self.__test_cases__:
+            if func(test):
+                newContainer.append(test)
+        return newContainer
+
     def summary(self):
         failed = self.filter(lambda status : status == False)
         if len(failed):
@@ -200,16 +210,24 @@ class TestCasesContainer:
         lenTotal = len(self.__test_cases__)
         lenPassed = len(self.filter(lambda status : status == True))
         lenFailed = len(failed)
+        percentPassed = 0
+        percentFailed = 0
+        if lenTotal:
+            percentPassed = int((lenPassed/lenTotal)*100)
+            percentFailed = int((lenFailed/lenTotal)*100)
+
         LOG.info("\n\nTEST SUMMARY! TOTAL: {}, PASS: {} ({}%), FAIL: {} ({}%)".format(
             lenTotal,
             lenPassed,
-            int((lenPassed/lenTotal)*100),
+            percentPassed,
             lenFailed,
-            int((lenFailed/lenTotal)*100)
+            percentFailed
         ))
 
-    def execute(self):
+    def execute(self, selected = None):
         global PORT
+        if selected != None:
+            self.__test_cases__ = selected
         for test in self.__test_cases__:
             context = TestCaseContext(
                 ipAddress = next_ip_address(),
@@ -243,3 +261,13 @@ def TestCase(component_name, author=None):
 def execute_tests():
     global __TestCases__
     __TestCases__.execute()
+
+def execute_test(testcaseSimpleRegex):
+    selectedTestcases = __TestCases__.map(
+        lambda test : 
+        (
+            ("{}.{}".format(test.componentName, test.testName))
+            .find(testcaseSimpleRegex) != -1
+        )
+    )
+    __TestCases__.execute(selectedTestcases)
