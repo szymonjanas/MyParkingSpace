@@ -27,19 +27,25 @@ def set_log_level(logLevel):
 
 _linux_ = 1
 _windows_ = 2
+_ci_linux_ = 3
 __system__ = _windows_
 def set_os(system):
     global __system__, _linux_
     if system == _linux_:
         __system__ = _linux_
         LOG.debug("Running system tests on linux!")
+    if system == _ci_linux_:
+        __system__ = _ci_linux_
+        LOG.debug("Running system tests on CI linux!")
 
 def __get_python_run_command__():
-    global __system__, _linux_, _windows_
+    global __system__, _linux_, _windows_, _ci_linux_
     if __system__ == _linux_:
         return "python3"
     if __system__ == _windows_:
         return "py"
+    if __system__ == _ci_linux_:
+        return "python"
 
 
 class TestOutcome:

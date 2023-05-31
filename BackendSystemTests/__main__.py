@@ -26,6 +26,8 @@ if __name__ == "__main__":
             i+=1
         if sys.argv[i] == "--linux":
             SystemTest.set_os(SystemTest._linux_)
+        if sys.argv[i] == "--ci-linux":
+            SystemTest.set_os(SystemTest._ci_linux_)
 
     if testLogLevel:
         SystemTest.set_log_level(testLogLevel)

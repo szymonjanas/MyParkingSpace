@@ -18,4 +18,4 @@ jobs:
       - name: Generate Datebase
         run: python Scripts/generate_new_database.py
       - name: Run BackendSystemTests
-        run: python BackendSystemTests --linux --loglevel DEBUG
+        run: python BackendSystemTests --ci-linux --loglevel DEBUG
