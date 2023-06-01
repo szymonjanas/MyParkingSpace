@@ -14,7 +14,7 @@ with open("Backend/config.json") as configFile:
 
 hostApi = Flask("MyParkingSpaceServer")
 hostApi.register_blueprint(ConnectionTestService.api_connectionTestService)
-# hostApi.register_blueprint(AdmissionControlService.api_admissionControlService)
+hostApi.register_blueprint(AdmissionControlService.api_admissionControlService)
 
 def RUN_APPLICATION(hostIpAddress, port, logFilePath : str = None):
     if not logFilePath:
@@ -28,7 +28,7 @@ def RUN_APPLICATION(hostIpAddress, port, logFilePath : str = None):
     database = dbService.DatabaseConnector()
     database.connect(configs["defaults"]["sqliteDatabasePath"]) # TODO add database path option from argv
 
-    # Database.init_database(Database.DatabaseFacade(database))
+    Database.init_database(Database.DatabaseFacade(database))
 
     if not hostIpAddress:
         hostIpAddress = "127.0.0.1"
@@ -52,5 +52,5 @@ if __name__ == "__main__":
             logFilePath = sys.argv[i+1]
             i+=1
 
-    # TODO przyjmowanie komend na ip i nazwę log file
+    # TODO custom database path
     RUN_APPLICATION(ipAddress, "5566", logFilePath)

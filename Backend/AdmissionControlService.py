@@ -4,25 +4,53 @@ import json
 from datetime import datetime
 import Database
 from  models.users import User
+import utils
 
 api_admissionControlService = Blueprint("Admission Control Service", __name__)
 
 LOG = logging.getLogger(__name__)
 
+def filterDatabaseOutput(database, func):
+    output = []
+    for item in database:
+        if func(item):
+            output.append(item)
+    return output
+
 @api_admissionControlService.route("/register", methods = ['POST'])
 def register():
-    LOG.info("{}".format(request.method))
 
     registerData = request.json
-    print(request.json)
+    requestId = utils.nextRequestId("reg_")
+    LOG.info("Registration attempt [{}] with data: {}".format(requestId, request.json))
     if not ("login" in registerData and 
             "password" in registerData and 
             "email" in registerData and
             "name" in registerData):
-        abort(400)
+        reason = "At least one registration parameter is invalid!"
+        LOG.warn("Registration [{}] aborted: {}".format(requestId, reason))
+        abort(400, reason)
 
-    dbRows = Database.get_database().get_user_by_login(registerData["login"])
-    print(dbRows)
+    if (len(registerData["login"]) == 0 or
+        len(registerData["password"]) == 0 or 
+        len(registerData["email"]) == 0 or
+        len(registerData["name"]) == 0):
+        reason = "At least one registration parameter is empty!"
+        LOG.warn("Registration [{}] aborted: {}".format(requestId, reason))
+        abort(400, reason)
+
+    dbRows = Database.get_database().get_all_users_details("{}, {}".format(User.dbLogin(), User.dbEmail()))
+    
+    if len(dbRows) > 0:
+        if len(filterDatabaseOutput(dbRows, lambda item: item[0]==registerData["login"])):
+            reason = 'User with login {} is already registered!'.format(registerData["login"])
+            LOG.warn("Registration [{}] aborted: {}".format(requestId, reason))
+            abort(400, reason)
+        if len(filterDatabaseOutput(dbRows, lambda item: item[1]==registerData["email"])):
+            reason = 'User with email {} is already registered!'.format(registerData["email"])
+            LOG.warn("Registration [{}] aborted: {}".format(requestId, reason))
+            abort(400, reason)
+
 
     nowTime = datetime.now()
     todayDate = nowTime.strftime("%d.%m.%Y")
@@ -34,9 +62,17 @@ def register():
         registerData["password"],
         registerData["email"]
     )
-    Database.get_database().insert_user(user)
+    isSuccessfull = Database.get_database().insert_user(user)
 
     # TODO add email validation
     # TODO add password encryption
 
-    return "register route"
+    if not isSuccessfull: # special corner case - not tested in system test
+        reason = "Internal database connection issue!"
+        LOG.error("Registration [{}] aborted: {}".format(requestId, reason))
+        abort(500, reason)
+
+    LOG.info("Registration [{}] successfull, new user details: {}".format(requestId, user.toTuple()))
+    message = {'message': 'Successful registration!'}
+    response = Response(json.dumps(message), status=201, mimetype='application/json')
+    return response

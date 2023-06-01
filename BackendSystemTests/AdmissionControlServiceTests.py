@@ -27,7 +27,7 @@ def t_user() -> User:
             "Piotr Kowalski"
         )
 
-@TestCase(__name__, wip=True)
+@TestCase(__name__)
 def test_200_whenUserIsNotRegisterInDatabaseThenRegisterNewUser(ctxt : TestCaseContext):
     ctxt.InitTest()
 
@@ -42,7 +42,7 @@ def test_200_whenUserIsNotRegisterInDatabaseThenRegisterNewUser(ctxt : TestCaseC
 
     ctxt.FinishTest()
 
-@TestCase(__name__, wip=True)
+@TestCase(__name__)
 def test_400_whenRequestContainIncorrectDataThenResponseWithCode400AndMessage(ctxt : TestCaseContext):
     ctxt.InitTest()
 
@@ -55,7 +55,7 @@ def test_400_whenRequestContainIncorrectDataThenResponseWithCode400AndMessage(ct
 
     ctxt.FinishTest()
 
-@TestCase(__name__, wip=True)
+@TestCase(__name__)
 def test_400_whenRequestContainDataWithAtLeastOneEmptyParameterThenResponseWithCode400AndMessage(ctxt : TestCaseContext):
     ctxt.InitTest()
 
@@ -68,7 +68,7 @@ def test_400_whenRequestContainDataWithAtLeastOneEmptyParameterThenResponseWithC
     
     ctxt.FinishTest()
 
-@TestCase(__name__, wip=True)
+@TestCase(__name__)
 def test_400_whenRequestLoginIsAlreadyRegisteredThenResponseWithCode400AndMessage(ctxt : TestCaseContext):
     ctxt.InitTest()
 
