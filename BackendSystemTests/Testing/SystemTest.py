@@ -5,10 +5,15 @@ import subprocess
 import time
 import requests
 import psutil
+import sqlite3
+import os
 
 LOGS_FILE_PATH = "logs/SystemTestOutput.log"
+LOG_DIRECTORY_PATH = "logs/systemtests/"
 PORT = "5566"
 PYTHON_RUNNER = "py"
+RETRIES_ON_TEST_INIT = 30
+SLEEP_TIME_BETWEEN_RETRIES_IN_SEC = 0.1
 
 with open(LOGS_FILE_PATH, "w") as file:
     pass
@@ -47,6 +52,19 @@ def __get_python_run_command__():
     if __system__ == _ci_linux_:
         return "python"
 
+def __clear_database_table__(table : str):
+    databasePath = "Backend/database/backend.sqlite"
+    databaseConnector = sqlite3.connect(databasePath)
+    DB = databaseConnector.cursor()
+    DB.execute("DELETE FROM {}".format(table))
+    databaseConnector.commit()
+
+def __clear_tests_logs_directory__():
+    files = os.listdir(LOG_DIRECTORY_PATH)
+    for file in files:
+        if file.endswith(".log"):
+            file_path = os.path.join(LOG_DIRECTORY_PATH, file)
+            os.remove(file_path)
 
 class TestOutcome:
     testStatus = True
@@ -91,11 +109,12 @@ class TestCaseContext:
         logging.getLogger("urllib3").propagate = True
 
     def connectToBackend(self):
+        global RETRIES_ON_TEST_INIT, SLEEP_TIME_BETWEEN_RETRIES_IN_SEC
         self.__turn_off_requests_logging__()
         while not self.isServerOnline():
-            time.sleep(0.1)
+            time.sleep(SLEEP_TIME_BETWEEN_RETRIES_IN_SEC)
             self.serverConnectionRetries += 1
-            if self.serverConnectionRetries > 30:
+            if self.serverConnectionRetries >= RETRIES_ON_TEST_INIT:
                 raise ConnectionError("SystemTest could not connect to server after {} retries!"
                                         .format(self.serverConnectionRetries))
         self.__turn_on_requests__logging__()
@@ -107,6 +126,9 @@ class TestCaseContext:
         process.kill()
 
     def InitTest(self):
+        for table in ["USERS"]:
+            __clear_database_table__(table)
+
         cmd = [__get_python_run_command__(), "Backend", 
              "--ipaddress", self.ipAddress,
              "--logfilepath", self.logFilePath
@@ -271,17 +293,17 @@ class TestCasesContainer:
             sys.exit('At least one of System Test failed!')
 
     def execute(self, selected = None):
-        global PORT
+        global PORT, LOG_DIRECTORY_PATH
         if selected != None:
             self.__test_cases__ = selected
         for test in self.__test_cases__:
             context = TestCaseContext(
                 ipAddress = next_ip_address(),
                 port = PORT,
-                logFilePath = "logs/systemtests/{}.{}--{}.log".format(
-                                                                test.componentName,
-                                                                test.testName,
-                                                                test.testNumber))
+                logFilePath = "{}{}.{}--{}.log".format(LOG_DIRECTORY_PATH,
+                                                        test.componentName,
+                                                        test.testName,
+                                                        test.testNumber))
             try:
                 test.execute(context)
                 test.testPass()
@@ -297,18 +319,21 @@ class TestCasesContainer:
 
 __TestCases__ = TestCasesContainer()
 
-def TestCase(component_name, author=None):
+def TestCase(component_name, author=None, wip=False):
     def decorator(func):
-        __TestCases__.append(
-            TestExecutionContext(
-                component_name, func.__name__, func, author))        
+        if (not wip): # wip = work in progress
+            __TestCases__.append(
+                TestExecutionContext(
+                    component_name, func.__name__, func, author))        
     return decorator
 
 def execute_tests():
     global __TestCases__
+    __clear_tests_logs_directory__()
     __TestCases__.execute()
 
 def execute_test(testcaseSimpleRegex):
+    __clear_tests_logs_directory__()
     selectedTestcases = __TestCases__.map(
         lambda test : 
         (
