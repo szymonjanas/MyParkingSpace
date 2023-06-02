@@ -33,8 +33,9 @@ class DatabaseConnector:
 
     def insert(self, command, parameters = ()):
         if not self.dbConnection:
-            return
+            return False
         
         cursor = self.dbConnection.cursor()
         cursor.execute(command, parameters)
         self.dbConnection.commit()
+        return True
