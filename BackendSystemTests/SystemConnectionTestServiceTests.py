@@ -3,7 +3,7 @@ from Testing import Assert
 import requests
 
 @TestCase(__name__)
-def test_whenServerIsRunningPathHelloWorldShouldReturnHelloWorldString(context : TestCaseContext):
+def test_whenServerIsRunningPathHelloWorld_thenShouldReturnHelloWorldString(context : TestCaseContext):
     context.InitTest()
 
     Assert.EXPECT_EQUAL(
@@ -15,7 +15,7 @@ def test_whenServerIsRunningPathHelloWorldShouldReturnHelloWorldString(context :
     context.FinishTest()
 
 @TestCase(__name__)
-def test_whenServerIsRunningPathHelloWorldShouldReturnHelloWorldStringOnSecondInstance(context : TestCaseContext):
+def test_whenServerIsRunningPathHelloWorld_thenShouldReturnHelloWorldStringOnSecondInstance(context : TestCaseContext):
     context.InitTest()
 
     Assert.EXPECT_EQUAL(
