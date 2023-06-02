@@ -4,3 +4,4 @@ Backend/database/*
 */__pycache__/
 BackendSystemTests/Testing/__pycache__/
 logs/*/*.log
+Backend/*/__pycache__/

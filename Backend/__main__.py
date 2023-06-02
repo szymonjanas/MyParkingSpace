@@ -16,7 +16,7 @@ hostApi = Flask("MyParkingSpaceServer")
 hostApi.register_blueprint(ConnectionTestService.api_connectionTestService)
 # hostApi.register_blueprint(AdmissionControlService.api_admissionControlService)
 
-def RUN_APPLICATION(hostIpAddress, port, logFilePath : str):
+def RUN_APPLICATION(hostIpAddress, port, logFilePath : str = None):
     if not logFilePath:
         logFilePath = configs["defaults"]["logsFilePath"]
     with open(logFilePath, "w") as file:

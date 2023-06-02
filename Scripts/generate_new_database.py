@@ -20,7 +20,7 @@ DB = databaseConnector.cursor()
 usersTable = [
     " UserProfileId INTEGER,",
     " RegistrationDate TEXT,",
-    " Username TEXT,",
+    " Name TEXT,",
     " Login TEXT,",
     " Password TEXT,",
     " Email"
