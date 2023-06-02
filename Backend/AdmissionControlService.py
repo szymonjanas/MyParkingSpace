@@ -81,11 +81,37 @@ def register():
 @api_admissionControlService.route("/login", methods = ['POST'])
 def login():
     loginData = request.json
-    loginParam = loginData["login"]
     requestId = utils.nextRequestId("login_")
+    LOG.info("Login attempt [{}] with data: {}".format(requestId, loginData))
+
+    if not ("login" in loginData and 
+            "password" in loginData):
+        reason = "At least one login parameter is invalid!"
+        LOG.warn("Login [{}] aborted: {}".format(requestId, reason))
+        abort(400, reason)
+
+    if (len(loginData["login"]) == 0 or
+        len(loginData["password"]) == 0):
+        reason = "At least one login parameter is empty!"
+        LOG.warn("Login [{}] aborted: {}".format(requestId, reason))
+        abort(400, reason)
+
+    loginParam = loginData["login"]
     dbRows = Database.get_database().select_user_details_where(
-        ("{}, {}".format(User.dbLogin(), User.dbEmail())), 
+        ("{}, {}".format(User.dbLogin(), User.dbPassword())), 
         ("{}='{}'".format(User.dbLogin(), loginParam)))
+    
+    if (len(dbRows) == 0):
+        reason = "User with login {} is not registered!".format(loginParam)
+        LOG.error("Login [{}] aborted: {}".format(requestId, reason))
+        abort(400, reason)
+
+    password = dbRows[0][1]
+    if not (password == loginData["password"]):
+        reason = "Wrong password for user: {}!".format(loginParam)
+        LOG.error("Login [{}] aborted: {}".format(requestId, reason))
+        abort(400, reason)
+
     token = userSession.generateLoginToken(loginParam)
 
     message = {'token': token }
