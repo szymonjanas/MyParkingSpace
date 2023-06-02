@@ -32,7 +32,10 @@ if __name__ == "__main__":
     if testLogLevel:
         SystemTest.set_log_level(testLogLevel)
 
+    ##### IMPORT TESTS FILES
     import SystemConnectionTestServiceTests
+    import AdmissionControlServiceTests
+    #####
 
     if testcaseSimpleRegex:
         SystemTest.execute_test(testcaseSimpleRegex)
