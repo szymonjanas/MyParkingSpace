@@ -32,15 +32,26 @@ class User:
             self.Email
         )
 
-    def toNamesFixture(self):
+    @staticmethod
+    def dbValues():
+        return "?,?,?,?,?,?"
+
+    @staticmethod
+    def toNamesFixture():
         return "{},{},{},{},{},{}".format(
             "UserProfileId",
             "RegistrationDate",
             "Name",
-            "Login",
+            User.dbLogin(),
             "Password",
-            "Email",
+            User.dbEmail()
         )
-
-
+    
+    @staticmethod
+    def dbLogin():
+        return "Login"
+    
+    @staticmethod
+    def dbEmail():
+        return "Email"
 
