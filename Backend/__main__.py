@@ -2,6 +2,7 @@ import sys, json, os
 import logging
 import loggingConfig
 import DatabaseConnector as dbService
+import DatabaseFacade
 from flask import Flask
 import ConnectionTestService
 
@@ -22,8 +23,10 @@ def RUN_APPLICATION(hostIpAddress, port, logFilePath):
     LOG = logging.getLogger(__name__)
     LOG.info('Hello world!')
     LOG.info("Log file location: {}".format(logFilePath))
-    database = dbService.DatabaseService()
+    database = dbService.DatabaseConnector()
     database.connect(configs["defaults"]["sqliteDatabasePath"]) # TODO add database path option from argv
+
+    DatabaseFacade.init_database(DatabaseFacade.DatabaseFacade(database))
 
     if not hostIpAddress:
         hostIpAddress = "127.0.0.1"
