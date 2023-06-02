@@ -5,6 +5,7 @@ from datetime import datetime
 import Database
 from  models.users import User
 import utils
+import userSession
 
 api_admissionControlService = Blueprint("Admission Control Service", __name__)
 
@@ -39,7 +40,7 @@ def register():
         LOG.warn("Registration [{}] aborted: {}".format(requestId, reason))
         abort(400, reason)
 
-    dbRows = Database.get_database().get_all_users_details("{}, {}".format(User.dbLogin(), User.dbEmail()))
+    dbRows = Database.get_database().select_all_users_details("{}, {}".format(User.dbLogin(), User.dbEmail()))
     
     if len(dbRows) > 0:
         if len(filterDatabaseOutput(dbRows, lambda item: item[0]==registerData["login"])):
@@ -76,3 +77,18 @@ def register():
     message = {'message': 'Successful registration!'}
     response = Response(json.dumps(message), status=201, mimetype='application/json')
     return response
+
+@api_admissionControlService.route("/login", methods = ['POST'])
+def login():
+    loginData = request.json
+    loginParam = loginData["login"]
+    requestId = utils.nextRequestId("login_")
+    dbRows = Database.get_database().select_user_details_where(
+        ("{}, {}".format(User.dbLogin(), User.dbEmail())), 
+        ("{}='{}'".format(User.dbLogin(), loginParam)))
+    token = userSession.generateLoginToken(loginParam)
+
+    message = {'token': token }
+    response = Response(json.dumps(message), status=201, mimetype='application/json')
+    return response
+    

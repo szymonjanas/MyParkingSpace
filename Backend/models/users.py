@@ -43,7 +43,7 @@ class User:
             "RegistrationDate",
             "Name",
             User.dbLogin(),
-            "Password",
+            User.dbPassword(),
             User.dbEmail()
         )
     
@@ -55,3 +55,6 @@ class User:
     def dbEmail():
         return "Email"
 
+    @staticmethod
+    def dbPassword():
+        return "Password"

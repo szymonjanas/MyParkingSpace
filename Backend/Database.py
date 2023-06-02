@@ -10,13 +10,20 @@ class DatabaseFacade:
     def __init__(self, dbConnector):
         self.databaseConnector = dbConnector
 
-    def get_all_users_details(self, details):
+    def select_all_users_details(self, details):
         cmd = 'SELECT {} FROM USERS'.format(details)
         LOG.debug("command: " + cmd)
         out = self.databaseConnector.select(cmd).fetchall()
         LOG.debug("output: {}".format(out))
         return out
     
+    def select_user_details_where(self, details, where):
+        cmd = 'SELECT {} FROM USERS WHERE {}'.format(details, where)
+        LOG.debug("command: " + cmd)
+        out = self.databaseConnector.select(cmd).fetchall()
+        LOG.debug("output: {}".format(out))
+        return out
+
     def insert_user(self, user : User):
         cmd = 'INSERT INTO USERS({}) VALUES({})'.format(user.toNamesFixture(), user.dbValues())
         LOG.debug("new insert cmd: {}".format(cmd))
