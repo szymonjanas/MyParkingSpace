@@ -1,4 +1,4 @@
-name: Build and run SystemTest for Backend
+name: Backend System Tests
 on: push
 jobs:
   build:
