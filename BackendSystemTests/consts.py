@@ -1,0 +1,2 @@
+
+PATH_REGISTER = "register"
