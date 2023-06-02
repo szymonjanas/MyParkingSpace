@@ -4,6 +4,8 @@ MyParkingSpace is a project for University Classes.
 Project will likely be abandon as soon as we receive a grade.
 ```
 
+[![Backend System Tests](https://github.com/szymonjanas/MyParkingSpace/actions/workflows/linux-backend.yml/badge.svg)](https://github.com/szymonjanas/MyParkingSpace/actions/workflows/linux-backend.yml)
+
 Scope:
 - Backend: python3 + flask
 - Frontend: react
@@ -32,6 +34,15 @@ pre-reservation during check - has to be confirmed in 15 min, generate Reservati
 ### Email Sender Service
 **Responsibilities:**
 - creating and sending email with QR Code picture encoded,
+
+### DATABASE
+TABLE: **USERS**
+
+`|UserProfileId|Registration date|UserName|Login|Password|Email|`
+
+TABLE: **RESERVATIONS**
+
+`|ReservationId|UserProfileId|Reservation Date|Time Start|Time End|Date when it was made|Time when it was made|`
 
 
 [AdmissionControlClassDiagram](docs/diagrams/AdmissionControlClassDiagram.md)
