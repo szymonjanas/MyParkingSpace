@@ -103,13 +103,13 @@ def login():
     
     if (len(dbRows) == 0):
         reason = "User with login {} is not registered!".format(loginParam)
-        LOG.error("Login [{}] aborted: {}".format(requestId, reason))
+        LOG.info("Login [{}] aborted: {}".format(requestId, reason))
         abort(400, reason)
 
     password = dbRows[0][1]
     if not (password == loginData["password"]):
         reason = "Wrong password for user: {}!".format(loginParam)
-        LOG.error("Login [{}] aborted: {}".format(requestId, reason))
+        LOG.info("Login [{}] aborted: {}".format(requestId, reason))
         abort(400, reason)
 
     token = userSession.generateLoginToken(loginParam)
