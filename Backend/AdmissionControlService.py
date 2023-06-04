@@ -112,9 +112,26 @@ def login():
         LOG.info("Login [{}] aborted: {}".format(requestId, reason))
         abort(400, reason)
 
-    token = userSession.generateLoginToken(loginParam)
+    token = userSession.generateSessionToken(loginParam)
 
     message = {'token': token }
     response = Response(json.dumps(message), status=201, mimetype='application/json')
     return response
     
+@api_admissionControlService.route("/logout", methods = ['POST'])
+def logout():
+    requestId = utils.nextRequestId("logout_")
+    if "Authorization" in request.headers:
+        LOG.info(request.headers["Authorization"])
+        token = request.headers["Authorization"].split(" ")[1]
+        LOG.info("Logout attempt [{}] with token: {}".format(requestId, token))
+
+    hasRemoved : bool = userSession.removeSession(token)
+    if not hasRemoved:
+        reason = "Session do not exist for token: {}!".format(token)
+        LOG.info("Logout [{}] aborted: {}".format(requestId, reason))
+        abort(400, reason)
+    
+    message = {'message': "Logout complete!" }
+    response = Response(json.dumps(message), status=201, mimetype='application/json')
+    return response

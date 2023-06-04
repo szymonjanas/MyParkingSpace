@@ -3,6 +3,7 @@ from Testing import Assert
 import requests
 import json
 import consts
+from header import AUTHORIZATION
 
 class User:
     def __init__(self, login, password, email, name):
@@ -32,9 +33,7 @@ def performUserRegistration(ctxt : TestCaseContext):
     userPayload = user.toJson()
     registerResp : requests.Response = requests.post(ctxt.URL + consts.PATH_REGISTER, json=userPayload)
 
-    Assert.EXPECT_EQUAL(registerResp.status_code, 201,
-        "To confirm successfull registration, response code have to be 201."
-    )
+    Assert.EXPECT_EQUAL(registerResp.status_code, 201, registerResp.content.decode())
 
     Assert.EXPECT_EQUAL(json.loads(registerResp.content)["message"], "Successful registration!")
 
@@ -56,7 +55,7 @@ def test_400_register_whenRequestContainIncorrectData_thenResponseWithCode400And
     userPayload.pop("login")
     registerResp : requests.Response = requests.post(ctxt.URL + consts.PATH_REGISTER, json=userPayload)
 
-    Assert.EXPECT_EQUAL(registerResp.status_code, 400)
+    Assert.EXPECT_EQUAL(registerResp.status_code, 400, registerResp.content.decode())
     Assert.EXPECT_PHRASE_IN_STRING("At least one registration parameter is invalid!", registerResp.content.decode())
 
     ctxt.FinishTest()
@@ -81,31 +80,35 @@ def test_400_register_whenRequestLoginIsAlreadyRegistered_thenResponseWithCode40
     user = t_user()
     userPayload = user.toJson()
     registerRespFirst : requests.Response = requests.post(ctxt.URL + consts.PATH_REGISTER, json=userPayload)
-    Assert.EXPECT_EQUAL(registerRespFirst.status_code, 201)
+    Assert.EXPECT_EQUAL(registerRespFirst.status_code, 201, registerRespFirst.content.decode())
 
     registerRespSecond : requests.Response = requests.post(ctxt.URL + consts.PATH_REGISTER, json=userPayload)
 
-    Assert.EXPECT_EQUAL(registerRespSecond.status_code, 400)
+    Assert.EXPECT_EQUAL(registerRespSecond.status_code, 400, registerRespSecond.content.decode())
     Assert.EXPECT_PHRASE_IN_STRING('User with login {} is already registered!'.format(user.login), registerRespSecond.content.decode())
     
     ctxt.FinishTest()
+
+def performLogin(ctxt : TestCaseContext, user : User):
+    userPayload = dict()
+    userPayload["login"] = user.login
+    userPayload["password"] = user.password
+
+    loginResponse : requests.Response = requests.post(ctxt.URL + consts.PATH_LOGIN, json=userPayload)
+    Assert.EXPECT_EQUAL(loginResponse.status_code, 201, loginResponse.content.decode())
+
+    loginContent = json.loads(loginResponse.content.decode())
+    Assert.EXPECT_KEY_IN_DICT("token", loginContent)
+    Assert.EXPECT_NOT_EMPTY(loginContent["token"])
+
+    return loginContent["token"]
 
 @TestCase(__name__)
 def test_200_login_whenRequestLoginAndUserIsRegistered_thenResponseWithUserSessionToken(ctxt : TestCaseContext):
     ctxt.InitTest()
 
     user = performUserRegistration(ctxt)
-
-    userPayload = dict()
-    userPayload["login"] = user.login
-    userPayload["password"] = user.password
-
-    loginResponse : requests.Response = requests.post(ctxt.URL + consts.PATH_LOGIN, json=userPayload)
-    Assert.EXPECT_EQUAL(loginResponse.status_code, 201)
-
-    loginContent = json.loads(loginResponse.content.decode())
-    Assert.EXPECT_KEY_IN_DICT("token", loginContent)
-    Assert.EXPECT_NOT_EMPTY(loginContent["token"])
+    token = performLogin(ctxt, user)
 
     ctxt.FinishTest()
 
@@ -120,7 +123,7 @@ def test_400_login_whenRequestLoginAndUserIsNotRegistered_thenResponseWithCode40
     userPayload["password"] = user.password
 
     loginResponse : requests.Response = requests.post(ctxt.URL + consts.PATH_LOGIN, json=userPayload)
-    Assert.EXPECT_EQUAL(loginResponse.status_code, 400)
+    Assert.EXPECT_EQUAL(loginResponse.status_code, 400, loginResponse.content.decode())
     Assert.EXPECT_PHRASE_IN_STRING('User with login {} is not registered!'.format(user.login), loginResponse.content.decode())
 
     ctxt.FinishTest()
@@ -135,7 +138,7 @@ def test_400_login_whenRequestLoginMissingParam_thenResponseWithCode400AndMessag
     userPayload["password"] = user.password
 
     loginResponse : requests.Response = requests.post(ctxt.URL + consts.PATH_LOGIN, json=userPayload)
-    Assert.EXPECT_EQUAL(loginResponse.status_code, 400)
+    Assert.EXPECT_EQUAL(loginResponse.status_code, 400, loginResponse.content.decode())
     Assert.EXPECT_PHRASE_IN_STRING('At least one login parameter is invalid!'.format(user.login), loginResponse.content.decode())
 
     ctxt.FinishTest()
@@ -151,7 +154,7 @@ def test_400_login_whenRequestLoginHasAtLeastOneEmptyParam_thenResponseWithCode4
     userPayload["password"] = ""
 
     loginResponse : requests.Response = requests.post(ctxt.URL + consts.PATH_LOGIN, json=userPayload)
-    Assert.EXPECT_EQUAL(loginResponse.status_code, 400)
+    Assert.EXPECT_EQUAL(loginResponse.status_code, 400, loginResponse.content.decode())
     Assert.EXPECT_PHRASE_IN_STRING('At least one login parameter is empty!'.format(user.login), loginResponse.content.decode())
 
     ctxt.FinishTest()
@@ -167,7 +170,7 @@ def test_400_login_whenRequestLoginAndUserIsRegisteredButLoginIsIncorrect_thenRe
     userPayload["password"] = user.password
 
     loginResponse : requests.Response = requests.post(ctxt.URL + consts.PATH_LOGIN, json=userPayload)
-    Assert.EXPECT_EQUAL(loginResponse.status_code, 400)
+    Assert.EXPECT_EQUAL(loginResponse.status_code, 400, loginResponse.content.decode())
     Assert.EXPECT_PHRASE_IN_STRING('User with login {} is not registered!'.format(userPayload["login"]),loginResponse.content.decode())
 
     ctxt.FinishTest()
@@ -185,5 +188,18 @@ def test_400_login_whenRequestLoginAndUserIsRegisteredButPasswordIsIncorrect_the
     loginResponse : requests.Response = requests.post(ctxt.URL + consts.PATH_LOGIN, json=userPayload)
     Assert.EXPECT_EQUAL(loginResponse.status_code, 400)
     Assert.EXPECT_PHRASE_IN_STRING('Wrong password for user: {}!'.format(user.login),loginResponse.content.decode())
+
+    ctxt.FinishTest()
+
+@TestCase(__name__)
+def test_200_logout_whenRequestLogoutAndUserIsRegisteredAndLogin_thenResponseWithCode200AndMessage(ctxt : TestCaseContext):
+    ctxt.InitTest()
+
+    user = performUserRegistration(ctxt)
+    token = performLogin(ctxt, user)
+
+    logoutResponse : requests.Response = requests.post(ctxt.URL + consts.PATH_LOGOUT, headers=AUTHORIZATION(token))
+    Assert.EXPECT_EQUAL(logoutResponse.status_code, 201, logoutResponse.content.decode())
+    Assert.EXPECT_PHRASE_IN_STRING("Logout complete!", logoutResponse.content.decode())
 
     ctxt.FinishTest()
