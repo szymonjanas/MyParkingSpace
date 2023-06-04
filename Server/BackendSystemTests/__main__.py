@@ -23,8 +23,8 @@ if __name__ == "__main__":
     SystemTest.systemTestContext = stContext
 
     ##### IMPORT TESTS FILES
-    import SystemConnectionTestServiceTests
-    import AdmissionControlServiceTests
+    import TestsSystemConnectionTestService
+    import TestsAdmissionControlService
     #####
 
 
