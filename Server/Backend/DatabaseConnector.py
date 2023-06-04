@@ -75,6 +75,8 @@ def generateNewDatabase(databasePath, removeIfExist : bool = False):
 
     parkingslotsTable = [
         " SlotNumber INTEGER,",
-        " ReservationId TEXT,"
+        " ReservationId TEXT,",
+        " PositionX INTEGER,",
+        " PositionY INTEGER"
     ]
     DB.execute("CREATE TABLE PARKINGSLOT({})".format("".join(parkingslotsTable)))

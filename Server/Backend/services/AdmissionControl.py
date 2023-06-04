@@ -6,7 +6,7 @@ import Database
 from  models.users import User
 import utils
 import userSession
-import common
+from services import common
 
 api_admissionControlService = Blueprint("Admission Control Service", __name__)
 
