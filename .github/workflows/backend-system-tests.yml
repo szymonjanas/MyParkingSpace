@@ -1,0 +1,23 @@
+name: Backend System Tests
+on: push
+jobs:
+  system_tests:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-python@v4
+      - name: Setup venv
+        run: |
+          python -m venv venv
+          source venv/bin/activate
+      
+      - name: Install dependencies
+        run: pip install -r Server/requirements.txt
+
+      - name: Install application based on setup.py
+        run: pip install -e .
+
+      - name: Run tests
+        run: |
+          cd Server
+          python BackendSystemTests --ci-linux --loglevel DEBUG

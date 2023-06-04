@@ -1,5 +1,6 @@
 import sqlite3
 import logging
+import sys, os
 
 LOG = logging.getLogger(__name__)
 
@@ -39,3 +40,36 @@ class DatabaseConnector:
         cursor.execute(command, parameters)
         self.dbConnection.commit()
         return True
+
+
+def generateNewDatabase(databasePath, removeIfExist : bool = False):
+    LOG.warn("Creating new database: {}, with flag removeIfExist as {}".format(databasePath, removeIfExist))
+    if os.path.exists(databasePath) and removeIfExist:
+        os.remove(databasePath)
+    else:
+        return
+
+    databaseConnector = sqlite3.connect(databasePath)
+    DB = databaseConnector.cursor()
+
+    usersTable = [
+        " UserProfileId INTEGER,",
+        " RegistrationDate TEXT,",
+        " Name TEXT,",
+        " Login TEXT,",
+        " Password TEXT,",
+        " Email"
+    ]
+    DB.execute("CREATE TABLE USERS({})".format("".join(usersTable)))
+
+    reservationsTable = [
+        " ReservationId INTEGER,",
+        " UserProfileId INTEGER,",
+        " ReservationDate TEXT,",
+        " ReservationTimeStart TEXT,",
+        " ReservationTimeEnd TEXT,",
+        " ReservationMadeDate TEXT,",
+        " ReservationMadeTime TEXT"
+    ]
+
+    DB.execute("CREATE TABLE RESERVATIONS({})".format("".join(reservationsTable)))

@@ -1,25 +1,26 @@
-import sys, json, os
+import sys
 import logging
 import DatabaseConnector as dbService
 import Database
 from flask import Flask
 from services import ConnectionTest, AdmissionControl
 import config
+from utils import SupportedArgs, ArgvDeserializer, ApplicationConfig
 import utils
 
 class Application:
     ipAddress = None
     port = None
 
-    def __init__(self, ipAddress : str = None, port : str = None, logFilePath : str = None):
-        self.setLoggingConfig(logFilePath)
+    def __init__(self, appConfig : ApplicationConfig):
+        self.setLoggingConfig(appConfig.logFilePath, appConfig.logLevel)
         
         self.LOG.info('Hello world!')
 
-        self.initDatabase()
+        self.initDatabase(appConfig.databasePath, appConfig.newDatabase)
 
-        self.setIpAddress(ipAddress)
-        self.setPort(port)
+        self.setIpAddress(appConfig.ipAddress)
+        self.setPort(appConfig.port)
 
         self.initServer()
 
@@ -27,37 +28,55 @@ class Application:
         if self.database:
             self.database.disconnect()
 
-    def setLoggingConfig(self, logsFilePath):
+    def setLoggingConfig(self, logsFilePath, logLevel):
         if not logsFilePath:
             logsFilePath = config.LOGS_FILE_PATH_DEFAULT
-        with open(logsFilePath, "w") as file:
-            pass
 
         self.LOG = logging.getLogger(__name__)
         self.LOG.info("Log file location: {}".format(logsFilePath))
+        
+        if not logLevel:
+            logLevel = config.LOG_LEVEL_DEFAULT
 
+        if not logsFilePath:
+            self.LOG.warn("Log file path does not exist!")
+            logging.basicConfig(
+                format=config.LOGGING_FORMAT,
+                handlers=[
+                    logging.StreamHandler()
+                ],
+                level=logLevel)
+            return
+
+        with open(logsFilePath, "w") as file:
+            pass
+    
         logging.basicConfig(
             format=config.LOGGING_FORMAT,
             handlers=[
                 logging.FileHandler(logsFilePath),
                 logging.StreamHandler()
             ],
-            level=logging.DEBUG)
+            level=logLevel)
+                
 
-    def initDatabase(self):
+    def initDatabase(self, databasePath, newDatabase : bool = None):
         self.database = dbService.DatabaseConnector()
-        self.database.connect(config.SQLITE_DATABASE_PATH_DEFAULT) # TODO add database path option from argv
+        if not databasePath:
+            databasePath = config.SQLITE_DATABASE_PATH_DEFAULT
+        dbService.generateNewDatabase(databasePath, newDatabase)
+        self.database.connect(databasePath) # TODO add database path option from argv
         Database.init_database(Database.DatabaseFacade(self.database))
 
     def setIpAddress(self, ipAddress : str = None):
         self.ipAddress = ipAddress
         if not self.ipAddress:
-            self.ipAddress = "127.0.0.1"
+            self.ipAddress = config.IP_ADDRESS
 
     def setPort(self, port : str = None):
         self.port = port
         if not port:
-            self.port = "5566"
+            self.port = config.PORT
 
     def initServer(self):
         self.flaskServer = Flask(config.SERVER_NAME)
@@ -82,11 +101,15 @@ class Application:
 
 if __name__ == "__main__":
 
-    args = utils.ArgvDeserializer(sys.argv)
+    args = ArgvDeserializer(sys.argv)
 
-    # TODO custom database path
     app = Application(
-        ipAddress = args.GetArg(utils.SupportedArgs.ipaddress),
-        logFilePath = args.GetArg(utils.SupportedArgs.logfilepath)
+        ApplicationConfig(
+            ipAddress = args.GetArg(SupportedArgs.ipaddress),
+            logFilePath = args.GetArg(SupportedArgs.logfilepath),
+            databasePath = args.GetArg(SupportedArgs.databasepath),
+            logLevel = utils.convertLogLevel(args.GetArg(SupportedArgs.loglevel)),
+            newDatabase = args.GetArg(SupportedArgs.newdatabase)
+        )
     )
     app.runServer()

@@ -1,0 +1,9 @@
+{
+    "defaults" :
+    {
+        "sqliteDatabasePath" : "Backend/database/backend.sqlite",
+        "logsFilePath" : "logs/backend.log",
+        "ipAddress" : "127.0.0.1",
+        "port" : "5566"
+    }
+}

@@ -1,7 +1,6 @@
-import random 
+import logging
 
 __requestsIds__ = dict()
-
 def nextRequestId(prefix : str):
     global __requestsIds__
     ids : list = __requestsIds__.get(prefix, list())
@@ -16,6 +15,24 @@ def nextRequestId(prefix : str):
 class SupportedArgs:
     ipaddress = "ipaddress"
     logfilepath = "logfilepath"
+    loglevel = "loglevel"
+    databasepath = "databasepath"
+    newdatabase = "newdatabase"
+
+class ApplicationConfig:
+    def __init__(self,
+                 ipAddress : str = None,
+                 port : str = None,
+                 logFilePath : str = None,
+                 logLevel : int = None,
+                 databasePath : str = None,
+                 newDatabase : bool = None):
+        self.ipAddress : str = ipAddress
+        self.port : str = port
+        self.logFilePath : str = logFilePath
+        self.logLevel : int = logLevel
+        self.databasePath : str = databasePath
+        self.newDatabase : bool = newDatabase
 
 class ArgvDeserializer:
     argv = []
@@ -38,9 +55,8 @@ class ArgvDeserializer:
                     if not nextArg.startswith('--'):
                         self.argsDict[arg[2:]] = nextArg
                         idx += 2
-                    else:
-                        self.argsDict[arg[2:]] = True
-                        idx += 1
+                        continue
+                self.argsDict[arg[2:]] = True
             idx += 1
 
     def IsNextArg(self, index) -> str:
@@ -52,3 +68,15 @@ class ArgvDeserializer:
             return self.argsDict[name]
         else:
             return None
+
+def convertLogLevel(logLevelStr):
+    if not logLevelStr:
+        return None
+    if logLevelStr == "DEBUG":
+        return logging.DEBUG
+    if logLevelStr == "INFO":
+        return logging.INFO
+    if logLevelStr == "WARNING":
+        return logging.WARNING
+    if logLevelStr == "ERROR":
+        return logging.ERROR

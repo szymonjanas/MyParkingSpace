@@ -5,66 +5,10 @@ import subprocess
 import time
 import requests
 import psutil
-import sqlite3
-import os
+import Testing.SystemTestConsts as consts
+import Testing.SystemTestContext as context
 
-LOGS_FILE_PATH = "logs/SystemTestOutput.log"
-LOG_DIRECTORY_PATH = "logs/systemtests/"
-PORT = "5566"
-PYTHON_RUNNER = "py"
-RETRIES_ON_TEST_INIT = 30
-SLEEP_TIME_BETWEEN_RETRIES_IN_SEC = 0.1
-
-with open(LOGS_FILE_PATH, "w") as file:
-    pass
-
-logging.basicConfig(
-    format='[%(asctime)s] %(message)s',
-    handlers=[
-        logging.FileHandler(LOGS_FILE_PATH),
-        logging.StreamHandler()
-    ],
-    level=logging.DEBUG)
-LOG = logging.getLogger()
-
-def set_log_level(logLevel):
-    LOG.setLevel(logLevel)
-
-_linux_ = 1
-_windows_ = 2
-_ci_linux_ = 3
-__system__ = _windows_
-def set_os(system):
-    global __system__, _linux_
-    if system == _linux_:
-        __system__ = _linux_
-        LOG.debug("Running system tests on linux!")
-    if system == _ci_linux_:
-        __system__ = _ci_linux_
-        LOG.debug("Running system tests on CI linux!")
-
-def __get_python_run_command__():
-    global __system__, _linux_, _windows_, _ci_linux_
-    if __system__ == _linux_:
-        return "python3"
-    if __system__ == _windows_:
-        return "py"
-    if __system__ == _ci_linux_:
-        return "python"
-
-def __clear_database_table__(table : str):
-    databasePath = "Backend/database/backend.sqlite"
-    databaseConnector = sqlite3.connect(databasePath)
-    DB = databaseConnector.cursor()
-    DB.execute("DELETE FROM {}".format(table))
-    databaseConnector.commit()
-
-def __clear_tests_logs_directory__():
-    files = os.listdir(LOG_DIRECTORY_PATH)
-    for file in files:
-        if file.endswith(".log"):
-            file_path = os.path.join(LOG_DIRECTORY_PATH, file)
-            os.remove(file_path)
+systemTestContext : context.SystemTestContext = None
 
 class TestOutcome:
     testStatus = True
@@ -75,6 +19,7 @@ class TestOutcome:
         self.testMessage = testMessage
 
 class TestCaseContext:
+    LOG = None
     testOutcome : TestOutcome
     ipAddress = None
     portAddress = None
@@ -84,6 +29,8 @@ class TestCaseContext:
     serverConnectionRetries = 0
 
     def __init__(self, ipAddress, port, logFilePath):
+        global systemTestContext
+        self.LOG = systemTestContext.LOG
         self.ipAddress = ipAddress
         self.portAddress = port
         self.logFilePath = logFilePath
@@ -109,12 +56,11 @@ class TestCaseContext:
         logging.getLogger("urllib3").propagate = True
 
     def connectToBackend(self):
-        global RETRIES_ON_TEST_INIT, SLEEP_TIME_BETWEEN_RETRIES_IN_SEC
         self.__turn_off_requests_logging__()
         while not self.isServerOnline():
-            time.sleep(SLEEP_TIME_BETWEEN_RETRIES_IN_SEC)
+            time.sleep(consts.SLEEP_TIME_BETWEEN_RETRIES_IN_SEC)
             self.serverConnectionRetries += 1
-            if self.serverConnectionRetries >= RETRIES_ON_TEST_INIT:
+            if self.serverConnectionRetries >= consts.RETRIES_ON_TEST_INIT:
                 raise ConnectionError("SystemTest could not connect to server after {} retries!"
                                         .format(self.serverConnectionRetries))
         self.__turn_on_requests__logging__()
@@ -126,14 +72,17 @@ class TestCaseContext:
         process.kill()
 
     def InitTest(self):
-        for table in ["USERS"]:
-            __clear_database_table__(table)
+        global systemTestContext
+        # for table in ["USERS"]:
+        #     self.systemTestContext.clearDatabaseTable(table)
 
-        cmd = [__get_python_run_command__(), "Backend", 
+        cmd = [systemTestContext.getPythonRunCommand(), "Backend", 
              "--ipaddress", self.ipAddress,
-             "--logfilepath", self.logFilePath
+             "--logfilepath", self.logFilePath,
+             "--databasepath", systemTestContext.databasePath,
+             "--newdatabase"
              ]
-        if LOG.level == LOG.debug:
+        if systemTestContext.IsDebug():
             self.SUT = subprocess.Popen(
                 cmd,
                 shell=False)
@@ -143,9 +92,9 @@ class TestCaseContext:
                 shell=False,
                 stdout=subprocess.DEVNULL,
                 stderr=subprocess.DEVNULL)
-        LOG.debug("Test run with command: {}".format(" ".join(cmd)))
+        self.LOG.debug("Test run with command: {}".format(" ".join(cmd)))
         self.connectToBackend()
-        LOG.debug("SystemTest connected to Backend Server successfully!")
+        self.LOG.debug("SystemTest connected to Backend Server successfully!")
 
     def FinishTest(self):
         if self.SUT:
@@ -211,33 +160,35 @@ class TestExecutionContext:
         self.author = author
         self.testOutcome = TestOutcome(True, None) 
     
+
     def setNumber(self, number):
         self.testNumber = number
 
     def setOutcome(self, outcome):
         self.testOutcome = outcome
 
-    def execute(self, context):
-        self.__log_test_run__()
+    def execute(self, context, LOG):
+        self.__log_test_run__(LOG)
         return self.testExec(context)
     
-    def __log_test_run__(self):
+    def __log_test_run__(self, LOG):
         LOG.info("________________________________________")
         LOG.info("TEST RUN: [ {} ] {}::{}{}".format(
             self.testNumber, self.componentName, self.testName,
             "\n                          Author: {}".format(self.author) if (self.author) else ""))
         
-    def testFail(self, message):
+    def testFail(self, message, LOG):
         self.testOutcome = TestOutcome(False, message)
         LOG.error("> FAILED: [ {} ] {}::{} \nFailure reason:\n{}".format(
             self.testNumber, self.componentName, self.testName, message))
 
-    def testPass(self):
+    def testPass(self, LOG):
         LOG.info("> PASSED: [ {} ] {}::{}".format(
             self.testNumber, self.componentName, self.testName))
 
 class TestCasesContainer:
     __test_cases__ = []
+    LOG = None
 
     def append(self, textExecutionContext : TestExecutionContext):
         testNum = len(self.__test_cases__)
@@ -258,7 +209,7 @@ class TestCasesContainer:
                 newContainer.append(test)
         return newContainer
 
-    def summary(self):
+    def summary(self, LOG):
         failed = self.filter(lambda status : status == False)
         if len(failed):
             LOG.error("\n\n{}\n{}\n{}\n\n".format(
@@ -293,29 +244,30 @@ class TestCasesContainer:
             sys.exit('At least one of System Test failed!')
 
     def execute(self, selected = None):
-        global PORT, LOG_DIRECTORY_PATH
+        global systemTestContext
         if selected != None:
             self.__test_cases__ = selected
+        LOG = systemTestContext.LOG
         for test in self.__test_cases__:
             context = TestCaseContext(
                 ipAddress = next_ip_address(),
-                port = PORT,
-                logFilePath = "{}{}.{}--{}.log".format(LOG_DIRECTORY_PATH,
+                port = consts.PORT,
+                logFilePath = "{}{}.{}--{}.log".format(systemTestContext.logDirectoryPath,
                                                         test.componentName,
                                                         test.testName,
                                                         test.testNumber))
             try:
-                test.execute(context)
-                test.testPass()
+                test.execute(context, LOG)
+                test.testPass(LOG)
             except Assert.TestFailException as fail:
-                test.testFail(fail)
+                test.testFail(fail, LOG)
             except ConnectionError as connectionError:
-                test.testFail(connectionError)
+                test.testFail(connectionError, LOG)
             except Exception as exception:
-                test.testFail(exception)
+                test.testFail(exception, LOG)
             finally:
                 context.FinishTest()
-        self.summary()
+        self.summary(LOG)
 
 __TestCases__ = TestCasesContainer()
 
@@ -328,12 +280,13 @@ def TestCase(component_name, author=None, wip=False):
     return decorator
 
 def execute_tests():
-    global __TestCases__
-    __clear_tests_logs_directory__()
+    global __TestCases__, systemTestContext
+    systemTestContext.clearTestsLogsDirectory()
     __TestCases__.execute()
 
 def execute_test(testcaseSimpleRegex):
-    __clear_tests_logs_directory__()
+    global systemTestContext
+    systemTestContext.clearTestsLogsDirectory()
     selectedTestcases = __TestCases__.map(
         lambda test : 
         (
