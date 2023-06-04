@@ -15,12 +15,10 @@ if __name__ == "__main__":
     if testLogLevel:
         stContext.setLogLevel(testLogLevel)
         stContext.initLogging()
-
     if enforceSystem == "linux":
         stContext.setSystem(context.System.linux)
     elif enforceSystem == "ci-linux":
         stContext.setSystem(context.System.ci_linux)
-
 
     SystemTest.systemTestContext = stContext
 

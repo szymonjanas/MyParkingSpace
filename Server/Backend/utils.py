@@ -45,23 +45,40 @@ class ArgvDeserializer:
     def deserialize(self):
         self.argsDict = dict()
         idx : int = 1 # skip app name
-
         while idx < len(self.argv):
             arg : str = self.argv[idx]
             
             if arg.startswith('--'):
-                if self.IsNextArg(idx):
-                    nextArg : str = self.argv[idx + 1]
-                    if not nextArg.startswith('--'):
-                        self.argsDict[arg[2:]] = nextArg
-                        idx += 2
-                        continue
-                self.argsDict[arg[2:]] = True
-            idx += 1
+                argValueOrNone = self.isDoubleArgument(idx)
+                if self.isSingleArgument(idx):
+                    self.argsDict[arg[2:]] = True
+                    idx += 1
+                elif argValueOrNone:
+                    self.argsDict[arg[2:]] = argValueOrNone
+                    idx += 2
+
+    def isSingleArgument(self, idx):
+        if self.IsNextArg(idx):
+            nextArg : str = self.argv[idx + 1]
+            if nextArg.startswith('--'):
+                return True
+            else:
+                return False
+        else:
+            return True
+
+    def isDoubleArgument(self, idx):
+        if self.IsNextArg(idx):
+            nextArg : str = self.argv[idx + 1]
+            if nextArg.startswith('--'):
+                return None
+            else:
+                return nextArg
+        else:
+            return None
 
     def IsNextArg(self, index) -> str:
-        if index + 1 < len(self.argv):
-            return True
+        return index + 1 < len(self.argv)
 
     def GetArg(self, name):
         if name in self.argsDict.keys():
