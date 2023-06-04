@@ -20,4 +20,4 @@ jobs:
       - name: Run tests
         run: |
           cd Server
-          python BackendSystemTests --ci-linux --loglevel DEBUG
+          python BackendSystemTests --os ci-linux --loglevel DEBUG --newdatabase
