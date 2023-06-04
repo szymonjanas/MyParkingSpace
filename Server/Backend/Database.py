@@ -12,22 +12,25 @@ class DatabaseFacade:
 
     def select_all_users_details(self, details):
         cmd = 'SELECT {} FROM USERS'.format(details)
-        LOG.debug("command: " + cmd)
+        LOG.debug("select all users details: " + cmd)
         out = self.databaseConnector.select(cmd).fetchall()
-        LOG.debug("output: {}".format(out))
         return out
     
     def select_user_details_where(self, details, where):
         cmd = 'SELECT {} FROM USERS WHERE {}'.format(details, where)
-        LOG.debug("command: " + cmd)
+        LOG.debug("select user details where: " + cmd)
         out = self.databaseConnector.select(cmd).fetchall()
-        LOG.debug("output: {}".format(out))
         return out
 
     def insert_user(self, user : User):
         cmd = 'INSERT INTO USERS({}) VALUES({})'.format(user.toNamesFixture(), user.dbValues())
-        LOG.debug("new insert cmd: {}".format(cmd))
+        LOG.debug("new user insert: {}".format(cmd))
         return self.databaseConnector.insert(cmd, user.toTuple())
+    
+    def select_parking_slots(self):
+        cmd = 'SELECT * FROM PARKINGSLOTS'
+        LOG.debug("select parkning slots: {}".format(cmd))
+        return self.databaseConnector.select(cmd).fetchall()
 
 __DatabaseFacade__ : DatabaseFacade = None
 
