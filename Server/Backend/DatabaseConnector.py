@@ -1,6 +1,6 @@
 import sqlite3
 import logging
-import sys, os
+import os
 
 LOG = logging.getLogger(__name__)
 
@@ -63,7 +63,7 @@ def generateNewDatabase(databasePath, removeIfExist : bool = False):
     DB.execute("CREATE TABLE USERS({})".format("".join(usersTable)))
 
     reservationsTable = [
-        " ReservationId INTEGER,",
+        " ReservationId TEXT,",
         " UserProfileId INTEGER,",
         " ReservationDate TEXT,",
         " ReservationTimeStart TEXT,",
@@ -71,5 +71,10 @@ def generateNewDatabase(databasePath, removeIfExist : bool = False):
         " ReservationMadeDate TEXT,",
         " ReservationMadeTime TEXT"
     ]
-
     DB.execute("CREATE TABLE RESERVATIONS({})".format("".join(reservationsTable)))
+
+    parkingslotsTable = [
+        " SlotNumber INTEGER,",
+        " ReservationId TEXT,"
+    ]
+    DB.execute("CREATE TABLE PARKINGSLOT({})".format("".join(parkingslotsTable)))
