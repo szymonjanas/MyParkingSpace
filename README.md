@@ -42,7 +42,9 @@ TABLE: **USERS**
 
 TABLE: **RESERVATIONS**
 
-`|ReservationId|UserProfileId|Reservation Date|Time Start|Time End|Date when it was made|Time when it was made|`
+`|ReservationId|SlotNumber|UserProfileId|Reservation Date|Time Start|Time End|Date when it was made|Time when it was made|`
 
+TABLE: **PARKINGSLOTS**
+`|SlotNumber|PositionX|PositionY|`
 
 [AdmissionControlClassDiagram](docs/diagrams/AdmissionControlClassDiagram.md)

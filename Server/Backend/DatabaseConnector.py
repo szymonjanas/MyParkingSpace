@@ -83,13 +83,13 @@ def generateNewDatabase(databasePath, removeIfExist : bool = False):
 
 
     # FIXME DUMB GENERATION OF RANDOM DATA - has to be moved to tests module
-    DB.execute('INSERT INTO PARKINGSLOTS( "SlotNumber", "ReservationId" ) VALUES ( "1", "X2")')
+    DB.execute('INSERT INTO PARKINGSLOTS( "SlotNumber" ) VALUES ( "1" )')
     databaseConnector.commit()
-    DB.execute('INSERT INTO PARKINGSLOTS( "SlotNumber", "ReservationId" ) VALUES ( "2", "X3")')
+    DB.execute('INSERT INTO PARKINGSLOTS( "SlotNumber" ) VALUES ( "2" )')
     databaseConnector.commit()
-    DB.execute('INSERT INTO PARKINGSLOTS( "SlotNumber", "ReservationId" ) VALUES ( "3", "X4")')
+    DB.execute('INSERT INTO PARKINGSLOTS( "SlotNumber" ) VALUES ( "3" )')
     databaseConnector.commit()
-    DB.execute('INSERT INTO PARKINGSLOTS( "SlotNumber", "ReservationId" ) VALUES ( "4", "X5")')
+    DB.execute('INSERT INTO PARKINGSLOTS( "SlotNumber" ) VALUES ( "4" )')
     databaseConnector.commit()
-    DB.execute('INSERT INTO PARKINGSLOTS( "SlotNumber", "ReservationId" ) VALUES ( "5", "X6")')
+    DB.execute('INSERT INTO PARKINGSLOTS( "SlotNumber" ) VALUES ( "5" )')
     databaseConnector.commit()
