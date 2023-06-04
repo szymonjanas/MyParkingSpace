@@ -3,41 +3,8 @@ from Testing import Assert
 import requests
 import json
 import consts
-from header import AUTHORIZATION
-
-class User:
-    def __init__(self, login, password, email, name):
-        self.login = login
-        self.password = password
-        self.email = email
-        self.name = name
-
-    def toJson(self) -> str:
-        userDict = dict()
-        userDict["login"] = self.login
-        userDict["password"] = self.password
-        userDict["email"] = self.email
-        userDict["name"] = self.name
-        return userDict
-
-def t_user() -> User:
-    return User(
-            "pkowalski",
-            "piotrkowalski123",
-            "piotr.kowalski@poczta.com",
-            "Piotr Kowalski"
-        )
-
-def performUserRegistration(ctxt : TestCaseContext):
-    user = t_user()
-    userPayload = user.toJson()
-    registerResp : requests.Response = requests.post(ctxt.URL + consts.PATH_REGISTER, json=userPayload)
-
-    Assert.EXPECT_EQUAL(registerResp.status_code, 201, registerResp.content.decode())
-
-    Assert.EXPECT_EQUAL(json.loads(registerResp.content)["message"], "Successful registration!")
-
-    return user
+from procedures import *
+import header
 
 @TestCase(__name__)
 def test_200_register_whenUserIsNotRegisterInDatabase_thenRegisterNewUser(ctxt : TestCaseContext):
@@ -48,7 +15,7 @@ def test_200_register_whenUserIsNotRegisterInDatabase_thenRegisterNewUser(ctxt :
     ctxt.FinishTest()
 
 @TestCase(__name__)
-def test_400_register_whenRequestContainIncorrectData_thenResponseWithCode400AndMessage(ctxt : TestCaseContext):
+def test_400_register_whenRequestContainIncorrectData(ctxt : TestCaseContext):
     ctxt.InitTest()
 
     userPayload : dict = t_user().toJson()
@@ -61,7 +28,7 @@ def test_400_register_whenRequestContainIncorrectData_thenResponseWithCode400And
     ctxt.FinishTest()
 
 @TestCase(__name__)
-def test_400_register_whenRequestContainDataWithAtLeastOneEmptyParameter_thenResponseWithCode400AndMessage(ctxt : TestCaseContext):
+def test_400_register_whenRequestContainDataWithAtLeastOneEmptyParameter(ctxt : TestCaseContext):
     ctxt.InitTest()
 
     userPayload : dict = t_user().toJson()
@@ -74,7 +41,7 @@ def test_400_register_whenRequestContainDataWithAtLeastOneEmptyParameter_thenRes
     ctxt.FinishTest()
 
 @TestCase(__name__)
-def test_400_register_whenRequestLoginIsAlreadyRegistered_thenResponseWithCode400AndMessage(ctxt : TestCaseContext):
+def test_400_register_whenRequestLoginIsAlreadyRegistered(ctxt : TestCaseContext):
     ctxt.InitTest()
 
     user = t_user()
@@ -89,22 +56,8 @@ def test_400_register_whenRequestLoginIsAlreadyRegistered_thenResponseWithCode40
     
     ctxt.FinishTest()
 
-def performLogin(ctxt : TestCaseContext, user : User):
-    userPayload = dict()
-    userPayload["login"] = user.login
-    userPayload["password"] = user.password
-
-    loginResponse : requests.Response = requests.post(ctxt.URL + consts.PATH_LOGIN, json=userPayload)
-    Assert.EXPECT_EQUAL(loginResponse.status_code, 201, loginResponse.content.decode())
-
-    loginContent = json.loads(loginResponse.content.decode())
-    Assert.EXPECT_KEY_IN_DICT("token", loginContent)
-    Assert.EXPECT_NOT_EMPTY(loginContent["token"])
-
-    return loginContent["token"]
-
 @TestCase(__name__)
-def test_200_login_whenRequestLoginAndUserIsRegistered_thenResponseWithUserSessionToken(ctxt : TestCaseContext):
+def test_200_login_whenRequestLoginAndUserIsRegistered_thenLoginUser(ctxt : TestCaseContext):
     ctxt.InitTest()
 
     user = performUserRegistration(ctxt)
@@ -113,7 +66,19 @@ def test_200_login_whenRequestLoginAndUserIsRegistered_thenResponseWithUserSessi
     ctxt.FinishTest()
 
 @TestCase(__name__)
-def test_400_login_whenRequestLoginAndUserIsNotRegistered_thenResponseWithCode400AndMessage(ctxt : TestCaseContext):
+def test_200_login_whenRequestLoginAndUserIsRegisteredAndAttemptToSecondLoginWithSameUser_thenReceiveSameToken(ctxt : TestCaseContext):
+    ctxt.InitTest()
+
+    user = performUserRegistration(ctxt)
+    token1 = performLogin(ctxt, user)
+    token2 = performLogin(ctxt, user)
+
+    Assert.EXPECT_EQUAL(token1, token2)
+
+    ctxt.FinishTest()
+
+@TestCase(__name__)
+def test_400_login_whenRequestLoginAndUserIsNotRegistered(ctxt : TestCaseContext):
     ctxt.InitTest()
 
     user = t_user()
@@ -129,7 +94,7 @@ def test_400_login_whenRequestLoginAndUserIsNotRegistered_thenResponseWithCode40
     ctxt.FinishTest()
 
 @TestCase(__name__)
-def test_400_login_whenRequestLoginMissingParam_thenResponseWithCode400AndMessage(ctxt : TestCaseContext):
+def test_400_login_whenRequestLoginMissingParam(ctxt : TestCaseContext):
     ctxt.InitTest()
 
     user = performUserRegistration(ctxt)
@@ -144,7 +109,7 @@ def test_400_login_whenRequestLoginMissingParam_thenResponseWithCode400AndMessag
     ctxt.FinishTest()
 
 @TestCase(__name__)
-def test_400_login_whenRequestLoginHasAtLeastOneEmptyParam_thenResponseWithCode400AndMessage(ctxt : TestCaseContext):
+def test_400_login_whenRequestLoginHasAtLeastOneEmptyParam(ctxt : TestCaseContext):
     ctxt.InitTest()
 
     user = performUserRegistration(ctxt)
@@ -160,7 +125,7 @@ def test_400_login_whenRequestLoginHasAtLeastOneEmptyParam_thenResponseWithCode4
     ctxt.FinishTest()
 
 @TestCase(__name__)
-def test_400_login_whenRequestLoginAndUserIsRegisteredButLoginIsIncorrect_thenResponseWithCode400AndMessage(ctxt : TestCaseContext):
+def test_400_login_whenRequestLoginAndUserIsRegisteredButLoginIsIncorrect(ctxt : TestCaseContext):
     ctxt.InitTest()
 
     user = performUserRegistration(ctxt)
@@ -176,7 +141,7 @@ def test_400_login_whenRequestLoginAndUserIsRegisteredButLoginIsIncorrect_thenRe
     ctxt.FinishTest()
 
 @TestCase(__name__)
-def test_400_login_whenRequestLoginAndUserIsRegisteredButPasswordIsIncorrect_thenResponseWithCode400AndMessage(ctxt : TestCaseContext):
+def test_400_login_whenRequestLoginAndUserIsRegisteredButPasswordIsIncorrect(ctxt : TestCaseContext):
     ctxt.InitTest()
 
     user = performUserRegistration(ctxt)
@@ -192,14 +157,25 @@ def test_400_login_whenRequestLoginAndUserIsRegisteredButPasswordIsIncorrect_the
     ctxt.FinishTest()
 
 @TestCase(__name__)
-def test_200_logout_whenRequestLogoutAndUserIsRegisteredAndLogin_thenResponseWithCode200AndMessage(ctxt : TestCaseContext):
+def test_200_logout_whenRequestLogoutAndUserIsRegisteredAndLogin_thenLogoutSession(ctxt : TestCaseContext):
     ctxt.InitTest()
 
     user = performUserRegistration(ctxt)
     token = performLogin(ctxt, user)
 
-    logoutResponse : requests.Response = requests.post(ctxt.URL + consts.PATH_LOGOUT, headers=AUTHORIZATION(token))
-    Assert.EXPECT_EQUAL(logoutResponse.status_code, 201, logoutResponse.content.decode())
-    Assert.EXPECT_PHRASE_IN_STRING("Logout complete!", logoutResponse.content.decode())
+    performLogout(ctxt, token)
+
+    ctxt.FinishTest()
+
+@TestCase(__name__)
+def test_400_logout_whenRequestLogoutAndUserIsRegisteredAndLoginButWrongToken(ctxt : TestCaseContext):
+    ctxt.InitTest()
+
+    user = performUserRegistration(ctxt)
+    token = performLogin(ctxt, user)
+    token += "1"
+    logoutResponse : requests.Response = requests.post(ctxt.URL + consts.PATH_LOGOUT, headers=header.AUTHORIZATION(token))
+    Assert.EXPECT_EQUAL(logoutResponse.status_code, 400, logoutResponse.content.decode())
+    Assert.EXPECT_PHRASE_IN_STRING("Session do not exist for token: {}!".format(token), logoutResponse.content.decode())
 
     ctxt.FinishTest()
