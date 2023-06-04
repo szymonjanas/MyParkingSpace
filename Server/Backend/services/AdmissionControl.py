@@ -6,6 +6,7 @@ import Database
 from  models.users import User
 import utils
 import userSession
+import common
 
 api_admissionControlService = Blueprint("Admission Control Service", __name__)
 
@@ -114,10 +115,8 @@ def login():
 @api_admissionControlService.route("/logout", methods = ['POST'])
 def logout():
     requestId = utils.nextRequestId("logout_")
-    if "Authorization" in request.headers:
-        LOG.info(request.headers["Authorization"])
-        token = request.headers["Authorization"].split(" ")[1]
-        LOG.info("Logout attempt [{}] with token: {}".format(requestId, token))
+
+    token = common.retreiveAuthorizationToken(LOG, requestId, request.headers)
 
     hasRemoved : bool = userSession.removeSession(token)
     if not hasRemoved:
