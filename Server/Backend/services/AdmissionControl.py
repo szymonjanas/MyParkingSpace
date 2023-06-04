@@ -11,13 +11,6 @@ api_admissionControlService = Blueprint("Admission Control Service", __name__)
 
 LOG = logging.getLogger(__name__)
 
-def filterDatabaseOutput(database, func):
-    output = []
-    for item in database:
-        if func(item):
-            output.append(item)
-    return output
-
 @api_admissionControlService.route("/register", methods = ['POST'])
 def register():
 
@@ -43,11 +36,11 @@ def register():
     dbRows = Database.get_database().select_all_users_details("{}, {}".format(User.dbLogin(), User.dbEmail()))
     
     if len(dbRows) > 0:
-        if len(filterDatabaseOutput(dbRows, lambda item: item[0]==registerData["login"])):
+        if len(list(filter(lambda item: item[0]==registerData["login"], dbRows))):
             reason = 'User with login {} is already registered!'.format(registerData["login"])
             LOG.warn("Registration [{}] aborted: {}".format(requestId, reason))
             abort(400, reason)
-        if len(filterDatabaseOutput(dbRows, lambda item: item[1]==registerData["email"])):
+        if len(list(filter(lambda item: item[1]==registerData["email"], dbRows))):
             reason = 'User with email {} is already registered!'.format(registerData["email"])
             LOG.warn("Registration [{}] aborted: {}".format(requestId, reason))
             abort(400, reason)
