@@ -4,7 +4,7 @@ MyParkingSpace is a project for University Classes.
 Project will likely be abandon as soon as we receive a grade.
 ```
 
-[![Backend System Tests](https://github.com/szymonjanas/MyParkingSpace/actions/workflows/linux-backend.yml/badge.svg)](https://github.com/szymonjanas/MyParkingSpace/actions/workflows/linux-backend.yml)
+[![Backend System Tests](https://github.com/szymonjanas/MyParkingSpace/actions/workflows/backend-system-tests.yml/badge.svg)](https://github.com/szymonjanas/MyParkingSpace/actions/workflows/backend-system-tests.yml)
 
 Scope:
 - Backend: python3 + flask
