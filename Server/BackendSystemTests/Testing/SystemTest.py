@@ -10,6 +10,16 @@ import Testing.SystemTestContext as context
 
 systemTestContext : context.SystemTestContext = None
 
+def convertLogLevel(loglevel):
+    if loglevel == logging.DEBUG:
+        return "DEBUG"
+    if loglevel == logging.INFO:
+        return "INFO"
+    if loglevel == logging.WARN:
+        return "WARN"
+    if loglevel == logging.ERROR:
+        return "ERROR"
+
 class TestOutcome:
     testStatus = True
     testMessage = ""
@@ -80,7 +90,8 @@ class TestCaseContext:
              "--ipaddress", self.ipAddress,
              "--logfilepath", self.logFilePath,
              "--databasepath", systemTestContext.databasePath,
-             "--newdatabase"
+             "--newdatabase",
+             "--loglevel", convertLogLevel(systemTestContext.loglevel) 
              ]
         if systemTestContext.IsDebug():
             self.SUT = subprocess.Popen(
