@@ -1,4 +1,4 @@
-import userSession
+import authentication
 
 def retreiveAuthorizationToken(LOG, requestId, headers):
     if "Authorization" in headers:
@@ -9,5 +9,5 @@ def retreiveAuthorizationToken(LOG, requestId, headers):
     
 def isSessionValid(LOG, requestId, headers):
     token = retreiveAuthorizationToken(LOG, requestId, headers)
-    return userSession.isSessionValid(token), token
+    return authentication.isSessionValid(token), token
 

@@ -5,7 +5,7 @@ from datetime import datetime
 import Database
 from  models.users import User
 import utils
-import userSession
+import authentication
 from services import common
 
 api_admissionControlService = Blueprint("Admission Control Service", __name__)
@@ -106,7 +106,7 @@ def login():
         LOG.info("Login [{}] aborted: {}".format(requestId, reason))
         abort(400, reason)
 
-    token = userSession.generateSessionToken(loginParam)
+    token = authentication.generateSessionToken(loginParam)
 
     message = {'token': token }
     response = Response(json.dumps(message), status=201, mimetype='application/json')
@@ -118,7 +118,7 @@ def logout():
 
     token = common.retreiveAuthorizationToken(LOG, requestId, request.headers)
 
-    hasRemoved : bool = userSession.removeSession(token)
+    hasRemoved : bool = authentication.removeSession(token)
     if not hasRemoved:
         reason = "Session do not exist for token: {}!".format(token)
         LOG.info("Logout [{}] aborted: {}".format(requestId, reason))
