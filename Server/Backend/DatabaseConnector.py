@@ -41,6 +41,20 @@ class DatabaseConnector:
         self.dbConnection.commit()
         return True
 
+    def delete(self, command):
+        if not self.dbConnection:
+            return False
+        
+        try:
+            cursor = self.dbConnection.cursor()
+            cursor.execute(command)
+            self.dbConnection.commit()
+        except Exception as e:
+            LOG.exception("delete attempt finish with exception: {}".format(e))
+            return False
+        return True
+
+
 
 def generateNewDatabase(databasePath, removeIfExist : bool = False):
     LOG.warn("Creating new database: {}, with flag removeIfExist as {}".format(databasePath, removeIfExist))

@@ -3,7 +3,7 @@ import logging
 import DatabaseConnector as dbService
 import Database
 from flask import Flask
-from services import ConnectionTest, AdmissionControl
+from services import ConnectionTest, AdmissionControl, SpaceReservation
 import config
 from utils import SupportedArgs, ArgvDeserializer, ApplicationConfig
 import utils
@@ -82,6 +82,7 @@ class Application:
         self.flaskServer = Flask(config.SERVER_NAME)
         self.flaskServer.register_blueprint(ConnectionTest.api_connectionTestService)
         self.flaskServer.register_blueprint(AdmissionControl.api_admissionControlService)
+        self.flaskServer.register_blueprint(SpaceReservation.api_spaceReservation)
 
     def runServer(self):
         if not self.ipAddress or not self.port:

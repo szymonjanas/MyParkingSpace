@@ -1,5 +1,6 @@
 from DatabaseConnector import DatabaseConnector
 from  models.users import User
+from models.parkingslot import ParkingSlot
 import logging 
 
 LOG = logging.getLogger(__name__)
@@ -27,10 +28,22 @@ class DatabaseFacade:
         LOG.debug("new user insert: {}".format(cmd))
         return self.databaseConnector.insert(cmd, user.toTuple())
     
+    def insert_parking_slot(self, slot : ParkingSlot):
+        cmd = 'INSERT INTO PARKINGSLOTS({}) VALUES({})'.format(
+            slot.toNamesFixture(), slot.dbValues()
+        )
+        LOG.debug("new parking slot: {}".format(slot.__dict__))
+        return self.databaseConnector.insert(cmd, slot.toTuple())
+
     def select_parking_slots(self):
         cmd = 'SELECT * FROM PARKINGSLOTS'
-        LOG.debug("select parkning slots: {}".format(cmd))
+        LOG.debug("select parking slots: {}".format(cmd))
         return self.databaseConnector.select(cmd).fetchall()
+    
+    def clear_all_parking_slots(self):
+        cmd = "DELETE FROM PARKINGSLOTS"
+        LOG.debug("delete all parking slots: {}".format(cmd))
+        return self.databaseConnector.delete(cmd)
 
 __DatabaseFacade__ : DatabaseFacade = None
 

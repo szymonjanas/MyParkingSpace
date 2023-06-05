@@ -4,29 +4,7 @@ import json
 from Testing import Assert
 import consts
 import header
-
-class User:
-    def __init__(self, login, password, email, name):
-        self.login = login
-        self.password = password
-        self.email = email
-        self.name = name
-
-    def toJson(self) -> str:
-        userDict = dict()
-        userDict["login"] = self.login
-        userDict["password"] = self.password
-        userDict["email"] = self.email
-        userDict["name"] = self.name
-        return userDict
-
-def t_user() -> User:
-    return User(
-            "pkowalski",
-            "piotrkowalski123",
-            "piotr.kowalski@poczta.com",
-            "Piotr Kowalski"
-        )
+from templates import *
 
 def performUserRegistration(ctxt : TestCaseContext):
     user = t_user()

@@ -22,10 +22,11 @@ if __name__ == "__main__":
 
     SystemTest.systemTestContext = stContext
 
-    ##### IMPORT TESTS FILES
+    ##### IMPORT TESTS FILES #####
     import TestsSystemConnectionTestService
     import TestsAdmissionControlService
-    #####
+    import TestsSpaceReservationService
+    ##############################
 
 
     if testcaseSimpleRegex:
