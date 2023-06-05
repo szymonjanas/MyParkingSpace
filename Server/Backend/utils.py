@@ -1,5 +1,6 @@
 import logging
 
+# FIXME provide mechanism to overload requests ids and remove old ones
 __requestsIds__ = dict()
 def nextRequestId(prefix : str):
     global __requestsIds__

@@ -83,9 +83,6 @@ class TestCaseContext:
 
     def InitTest(self):
         global systemTestContext
-        # for table in ["USERS"]:
-        #     self.systemTestContext.clearDatabaseTable(table)
-
         cmd = [systemTestContext.getPythonRunCommand(), "Backend", 
              "--ipaddress", self.ipAddress,
              "--logfilepath", self.logFilePath,
@@ -183,7 +180,8 @@ class TestExecutionContext:
         return self.testExec(context)
     
     def __log_test_run__(self, LOG):
-        LOG.info("________________________________________")
+        LOG.info("##################################################################")
+        LOG.info("##################################################################")
         LOG.info("TEST RUN: [ {} ] {}::{}{}".format(
             self.testNumber, self.componentName, self.testName,
             "\n                          Author: {}".format(self.author) if (self.author) else ""))
