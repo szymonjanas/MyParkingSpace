@@ -31,7 +31,7 @@ def t_user() -> User:
 def performUserRegistration(ctxt : TestCaseContext):
     user = t_user()
     userPayload = user.toJson()
-    registerResp : requests.Response = requests.post(ctxt.URL + consts.PATH_REGISTER, json=userPayload)
+    registerResp : requests.Response = requests.post(ctxt.URL + consts.PATH.REGISTER, json=userPayload)
 
     Assert.EXPECT_EQUAL(registerResp.status_code, 201, registerResp.content.decode())
 
@@ -44,7 +44,7 @@ def performLogin(ctxt : TestCaseContext, user : User):
     userPayload["login"] = user.login
     userPayload["password"] = user.password
 
-    loginResponse : requests.Response = requests.post(ctxt.URL + consts.PATH_LOGIN, json=userPayload)
+    loginResponse : requests.Response = requests.post(ctxt.URL + consts.PATH.LOGIN, json=userPayload)
     Assert.EXPECT_EQUAL(loginResponse.status_code, 201, loginResponse.content.decode())
 
     loginContent = json.loads(loginResponse.content.decode())
@@ -54,6 +54,6 @@ def performLogin(ctxt : TestCaseContext, user : User):
     return loginContent["token"]
 
 def performLogout(ctxt : TestCaseContext, token):
-    logoutResponse : requests.Response = requests.post(ctxt.URL + consts.PATH_LOGOUT, headers=header.AUTHORIZATION(token))
+    logoutResponse : requests.Response = requests.post(ctxt.URL + consts.PATH.LOGOUT, headers=header.AUTHORIZATION(token))
     Assert.EXPECT_EQUAL(logoutResponse.status_code, 201, logoutResponse.content.decode())
     Assert.EXPECT_PHRASE_IN_STRING("Logout complete!", logoutResponse.content.decode())

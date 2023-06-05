@@ -1,4 +1,6 @@
 
-PATH_REGISTER = "register"
-PATH_LOGIN = "login"
-PATH_LOGOUT = "logout"
+class PATH:
+    REGISTER = "register"
+    LOGIN = "login"
+    LOGOUT = "logout"
+    PARKING_SLOTS = "parking/slots"
