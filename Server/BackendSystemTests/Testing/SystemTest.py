@@ -175,9 +175,12 @@ class TestExecutionContext:
     def setOutcome(self, outcome):
         self.testOutcome = outcome
 
-    def execute(self, context, LOG):
+    def execute(self, context : TestCaseContext, LOG):
         self.__log_test_run__(LOG)
-        return self.testExec(context)
+        context.InitTest()
+        output = self.testExec(context)
+        context.FinishTest()
+        return output
     
     def __log_test_run__(self, LOG):
         LOG.info("##################################################################")
@@ -293,14 +296,14 @@ def execute_tests():
     systemTestContext.clearTestsLogsDirectory()
     __TestCases__.execute()
 
-def execute_test(testcaseSimpleRegex):
+def execute_test(testcaseSimpleRegex : str):
     global systemTestContext
     systemTestContext.clearTestsLogsDirectory()
     selectedTestcases = __TestCases__.map(
         lambda test : 
         (
-            ("{}.{}".format(test.componentName, test.testName))
-            .find(testcaseSimpleRegex) != -1
+            ("{}.{}".format(test.componentName, test.testName).lower())
+            .find(testcaseSimpleRegex.lower()) != -1
         )
     )
     __TestCases__.execute(selectedTestcases)
