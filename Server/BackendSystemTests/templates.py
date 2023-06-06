@@ -6,14 +6,6 @@ class User:
         self.email = email
         self.name = name
 
-    def toJson(self) -> str:
-        userDict = dict()
-        userDict["login"] = self.login
-        userDict["password"] = self.password
-        userDict["email"] = self.email
-        userDict["name"] = self.name
-        return userDict
-
 def t_user() -> User:
     return User(
             "pkowalski",
@@ -25,9 +17,11 @@ def t_user() -> User:
 class ParkingSlot:
     def __init__(self,
                  SlotNumber,
+                 Floor,
                  PositionX,
                  PositionY):
         self.SlotNumber = SlotNumber
+        self.Floor = Floor
         self.PositionX = PositionX
         self.PositionY = PositionY
 # [x, y]
@@ -40,17 +34,18 @@ ParkingMap = [
     [1,6],[2,6,-1],[3,6], [4,6], [5,6]
 ]
 
-def generateParkingSlots():
+def generateParkingSlots(Floor = 1):
         slots = []
-        for idx, slot in enumerate(ParkingMap):
-            if len(slot) == 3: # entrance slot
-                slots.append(
-                    ParkingSlot(-1, slot[0], slot[1]).__dict__
-                )
-            else:
-                slots.append(
-                    ParkingSlot(idx, slot[0], slot[1]).__dict__
-                )
+        for floorIdx in range(Floor):
+            for idx, slot in enumerate(ParkingMap):
+                if len(slot) == 3: # entrance slot
+                    slots.append(
+                        ParkingSlot(-1, floorIdx, slot[0], slot[1]).__dict__
+                    )
+                else:
+                    slots.append(
+                        ParkingSlot(idx, floorIdx, slot[0], slot[1]).__dict__
+                    )
         return slots
 
 t_parkingSlots = generateParkingSlots()

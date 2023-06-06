@@ -5,10 +5,11 @@ from Testing import Assert
 import consts
 import header
 from templates import *
+from Server.Backend import utils
 
 def performUserRegistration(ctxt : TestCaseContext):
     user = t_user()
-    userPayload = user.toJson()
+    userPayload = utils.objectToJson(user)
     registerResp : requests.Response = requests.post(ctxt.URL + consts.PATH.REGISTER, json=userPayload)
 
     Assert.EXPECT_EQUAL(registerResp.status_code, 201, registerResp.content.decode())
