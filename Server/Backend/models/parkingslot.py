@@ -1,5 +1,6 @@
+from models.model import Model
 
-class ParkingSlot:
+class ParkingSlot(Model):
     SlotNumber = "SlotNumber"
     Floor = "Floor"
     PositionX = "PositionX"

@@ -1,6 +1,6 @@
+from models.model import Model
 
-
-class User:
+class User(Model):
     UserProfileId = "UserProfileId"
     RegistrationDate = "RegistrationDate"
     Name = "Name"

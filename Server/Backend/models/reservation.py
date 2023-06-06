@@ -1,5 +1,6 @@
+from models.model import Model
 
-class Reservation:
+class Reservation(Model):
     def __init__(self,
                  ReservationId,
                  SlotNumber,

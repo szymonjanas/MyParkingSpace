@@ -1,71 +1,137 @@
-from DatabaseConnector import DatabaseConnector
-from  models.users import User
-from models.parkingslot import ParkingSlot
 import logging 
+from DatabaseConnector import SQLite3DatabaseConnector
 from utils import toTuple, toNamesFixture, toDbValuesFixture
 
 LOG = logging.getLogger(__name__)
 
-class DatabaseFacade:
-    databaseConnector : DatabaseConnector
+connector : SQLite3DatabaseConnector = None
 
-    def __init__(self, dbConnector):
-        self.databaseConnector = dbConnector
+def init_database_connector(dbConnector : SQLite3DatabaseConnector):
+    global connector
+    connector = dbConnector
 
-    def select_all_users_details(self, details):
-        cmd = 'SELECT {} FROM USERS'.format(details)
-        LOG.debug("select all users details: " + cmd)
-        out = self.databaseConnector.select(cmd).fetchall()
-        return out
+class SqlTableName:
+    USERS = "USERS"
+    PARKINGSLOTS = "PARKINGSLOTS"
+
+###############
+###  WHERE  ###
+###############
+
+class SqlConditionConcatenator:
+    AND = "AND"
+    OR = "OR"
+
+class SqlWhereCondition:
+    def __init__(self, conditions):
+        self.conditions = conditions
+
+class SqlWhereBuilder:
+    def __init__(self):
+        self.conditionList = list()
+
+    def addCondition(self, condition : dict, concatenator = SqlConditionConcatenator.AND):
+        if len(condition.keys()) > 1:
+            self.addConditions(condition, concatenator)
+        for key, value in condition.items():
+            if len(self.conditionList) > 1:
+                self.conditionList.append(concatenator)
+            self.conditionList.append("{}='{}'".format(key, value))
+        return self
+
+    def get(self) -> SqlWhereCondition:
+        return SqlWhereCondition(' '.join(self.conditionList))
+
+##############
+### INSERT ###
+##############
+
+class InsertQuery:
+    def __init__(self, 
+                 query,
+                 values):
+        self.query = query
+        self.values = values
+
+class SqlInsertQueryExecutor:
+    def __init__(self, insertQuery : InsertQuery):
+        self.insertQuery = insertQuery
+
+    def execute(self, dbConnector : SQLite3DatabaseConnector):
+        LOG.debug("new insert request: {}".format(self.insertQuery.__dict__))
+        return dbConnector.insert(self.insertQuery.query, self.insertQuery.values)
+
+class SqlInsertQuery:
+    def __init__(self, tableName : str):
+        self.tableName = tableName
+
+    def insert(self, model):
+        return SqlInsertQueryExecutor(
+                    InsertQuery(
+                        query='INSERT INTO {table}({names}) VALUES({values})'.format(
+                                table=self.tableName,
+                                names=toNamesFixture(model),
+                                values=toDbValuesFixture(model)), 
+                        values=toTuple(model)))
+
+##############
+### SELECT ###
+##############
+
+class SelectQuery:
+    def __init__(self, query):
+        self.query = query
+
+class SqlSelectQueryExecutor:
+    def __init__(self,
+                 selectQuery : SelectQuery):
+        self.selectQuery = selectQuery
+
+    def where(self, sqlWhereCondition : SqlWhereCondition):
+        self.selectQuery.query += ' WHERE {}'.format(sqlWhereCondition.conditions)
+        return self
+
+    def execute(self, dbConnector : SQLite3DatabaseConnector):
+        LOG.debug("new select request: {}".format(self.selectQuery.__dict__))
+        return dbConnector.select(self.selectQuery.query).fetchall()
+
+class SqlSelectQuery:
+    def __init__(self, tableName : str):
+        self.tableName = tableName
+
+    def select(self, fixture : tuple):
+        return SqlSelectQueryExecutor(
+                    SelectQuery('SELECT {fixture} FROM {table}'.format(
+                                    fixture=', '.join(fixture),
+                                    table=self.tableName)))
+
+##############
+### DELETE ###
+##############
+
+class DeleteQuery:
+    def __init__(self,
+                 query):
+        self.query = query
+
+class SqlDeleteQueryExecutor:
+    def __init__(self,
+                 deleteQuery : DeleteQuery):
+        self.deleteQuery = deleteQuery
+
+    def where(self, sqlWhereCondition : SqlWhereCondition):
+        self.deleteQuery.query += ' WHERE {}'.format(sqlWhereCondition.conditions)
+        return self
     
-    def select_user_details_where(self, details : list, where : dict):
-        details = ', '.join(details)
-        whereStr = str()
-        idx = 0
-        for key, value in where.items():
-            whereStr += "{}='{}'".format(key, value)
-            if idx < len(where.keys())-1:
-                whereStr += " AND "
-            idx += 1
-        cmd = 'SELECT {} FROM USERS WHERE {}'.format(details, whereStr)
-        LOG.debug("select user details where: " + cmd)
-        out = self.databaseConnector.select(cmd).fetchall()
-        return out
+    def execute(self, dbConnector : SQLite3DatabaseConnector):
+        LOG.debug("new delete request: {}".format(self.deleteQuery.__dict__))
+        return dbConnector.select(self.deleteQuery.query)
 
-    def insert_user(self, user : User):
-        cmd = 'INSERT INTO USERS({}) VALUES({})'.format(
-            toNamesFixture(user), toDbValuesFixture(user)
-        )
-        LOG.debug("new user insert: {}".format(cmd))
-        return self.databaseConnector.insert(cmd, toTuple(user))
+class SqlDeleteQuery:
+    def __init__(self, tableName : str):
+        self.tableName = tableName
+
+    def delete(self):
+        return SqlDeleteQueryExecutor(
+                    DeleteQuery('DELETE FROM {}'.format(self.tableName)))
     
-    def insert_parking_slot(self, slot : ParkingSlot):
-        cmd = 'INSERT INTO PARKINGSLOTS({}) VALUES({})'.format(
-            toNamesFixture(slot), toDbValuesFixture(slot)
-        )
-        LOG.debug("new parking slot: {}".format(slot.__dict__))
-        return self.databaseConnector.insert(cmd, toTuple(slot))
-
-    def select_parking_slots(self):
-        cmd = 'SELECT * FROM PARKINGSLOTS'
-        LOG.debug("select parking slots: {}".format(cmd))
-        return self.databaseConnector.select(cmd).fetchall()
-    
-    def clear_all_parking_slots(self):
-        cmd = "DELETE FROM PARKINGSLOTS"
-        LOG.debug("delete all parking slots: {}".format(cmd))
-        return self.databaseConnector.delete(cmd)
-
-__DatabaseFacade__ : DatabaseFacade = None
-
-def is_database():
-    global __DatabaseFacade__
-    return bool(__DatabaseFacade__)
-
-def get_database():
-    global __DatabaseFacade__
-    return __DatabaseFacade__
-
-def init_database(dbFacade : DatabaseFacade):
-    global __DatabaseFacade__
-    __DatabaseFacade__ = dbFacade

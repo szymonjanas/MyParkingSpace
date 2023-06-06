@@ -19,6 +19,7 @@ class SupportedArgs:
     loglevel = "loglevel"
     databasepath = "databasepath"
     newdatabase = "newdatabase"
+    databasetype = "databasetype"
 
 class ApplicationConfig:
     def __init__(self,
@@ -27,13 +28,15 @@ class ApplicationConfig:
                  logFilePath : str = None,
                  logLevel : int = None,
                  databasePath : str = None,
-                 newDatabase : bool = None):
+                 newDatabase : bool = None,
+                 databasetype : str = None):
         self.ipAddress : str = ipAddress
         self.port : str = port
         self.logFilePath : str = logFilePath
         self.logLevel : int = logLevel
         self.databasePath : str = databasePath
         self.newDatabase : bool = newDatabase
+        self.databaseType : str = databasetype
 
 class ArgvDeserializer:
     argv = []

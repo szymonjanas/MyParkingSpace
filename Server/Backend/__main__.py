@@ -17,7 +17,10 @@ class Application:
         
         self.LOG.info('Hello world!')
 
-        self.initDatabase(appConfig.databasePath, appConfig.newDatabase)
+        self.initDatabase(
+            appConfig.databasePath,
+            appConfig.newDatabase,
+            appConfig.databaseType)
 
         self.setIpAddress(appConfig.ipAddress)
         self.setPort(appConfig.port)
@@ -60,13 +63,20 @@ class Application:
             level=logLevel)
                 
 
-    def initDatabase(self, databasePath, newDatabase : bool = None):
-        self.database = dbService.DatabaseConnector()
+    def initDatabase(self, databasePath,
+                           newDatabase : bool = None,
+                           databaseType : str = None):
         if not databasePath:
             databasePath = config.SQLITE_DATABASE_PATH_DEFAULT
-        dbService.generateNewDatabase(databasePath, newDatabase)
+
+        if not databaseType or databaseType == dbService.DatabaseType.sqlite3:
+            self.database = dbService.SQLite3DatabaseConnector()
+
+            # FIXME I don't like that solution, but I don't have any better idea
+            dbService.generateNewDatabase(databasePath, newDatabase)
+
         self.database.connect(databasePath) # TODO add database path option from argv
-        Database.init_database(Database.DatabaseFacade(self.database))
+        Database.init_database_connector(self.database)
 
     def setIpAddress(self, ipAddress : str = None):
         self.ipAddress = ipAddress
@@ -106,11 +116,13 @@ if __name__ == "__main__":
 
     app = Application(
         ApplicationConfig(
-            ipAddress = args.GetArg(SupportedArgs.ipaddress),
-            logFilePath = args.GetArg(SupportedArgs.logfilepath),
-            databasePath = args.GetArg(SupportedArgs.databasepath),
-            logLevel = utils.convertLogLevel(args.GetArg(SupportedArgs.loglevel)),
-            newDatabase = args.GetArg(SupportedArgs.newdatabase)
+            ipAddress =     args.GetArg(SupportedArgs.ipaddress),
+            logFilePath =   args.GetArg(SupportedArgs.logfilepath),
+            databasePath =  args.GetArg(SupportedArgs.databasepath),
+            logLevel = utils.convertLogLevel(
+                            args.GetArg(SupportedArgs.loglevel)),
+            newDatabase =   args.GetArg(SupportedArgs.newdatabase),
+            databasetype =  args.GetArg(SupportedArgs.databasetype)
         )
     )
     app.runServer()

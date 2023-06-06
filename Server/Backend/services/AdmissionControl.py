@@ -2,7 +2,7 @@ from flask import Blueprint, request, Response, abort
 import logging
 import json
 from datetime import datetime
-import Database
+import Database as db
 from  models.users import User
 import utils
 import authentication
@@ -35,7 +35,9 @@ def register():
         LOG.warn("Registration [{}] aborted: {}".format(requestId, reason))
         abort(400, reason)
 
-    dbRows = Database.get_database().select_all_users_details("{}, {}".format(User.Login, User.Email))
+    dbRows = db.SqlSelectQuery(db.SqlTableName.USERS) \
+                .select((User.Login, User.Email)) \
+                .execute(db.connector)
     
     if len(dbRows) > 0:
         if len(list(filter(lambda item: item[0]==registerData["login"], dbRows))):
@@ -58,7 +60,10 @@ def register():
         registerData["password"],
         registerData["email"]
     )
-    isSuccessfull = Database.get_database().insert_user(user)
+
+    isSuccessfull = db.SqlInsertQuery(db.SqlTableName.USERS) \
+                        .insert(user) \
+                        .execute(db.connector)
 
     # TODO add email validation
     # TODO add password encryption
@@ -92,10 +97,12 @@ def login():
         abort(400, reason)
 
     loginParam = loginData["login"]
-    dbRows = Database.get_database().select_user_details_where(
-        [User.Login, User.Password], 
-        {User.Login: loginParam})
-    
+
+    dbRows = db.SqlSelectQuery(db.SqlTableName.USERS) \
+                    .select((User.Login, User.Password)) \
+                    .where(db.SqlWhereBuilder() \
+                            .addCondition({User.Login: loginParam}).get()) \
+                    .execute(db.connector)
     if (len(dbRows) == 0):
         reason = "User with login {} is not registered!".format(loginParam)
         LOG.info("Login [{}] aborted: {}".format(requestId, reason))

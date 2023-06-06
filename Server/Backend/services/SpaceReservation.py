@@ -2,7 +2,7 @@ from flask import Blueprint, request, Response, abort
 import logging
 import json
 from datetime import datetime
-import Database
+import Database as db
 from  models.parkingslot import ParkingSlot
 import utils
 from authentication import Authentication
@@ -44,14 +44,16 @@ def new_parking_slots():
         reason = "Slots list is empty!"
         LOG.debug("New parking slots attempt [{}] aborted: {}".format(requestId, reason))
         abort(400, reason)
-    
-    if not Database.get_database().clear_all_parking_slots():
+
+    if not db.SqlDeleteQuery(db.SqlTableName.PARKINGSLOTS).delete().execute(db.connector):
         reason = "Internal database error!"
         LOG.debug("New parking slots attempt [{}] aborted: {}".format(requestId, reason))
         abort(500, reason)
 
     for slot in slots:
-        if not Database.get_database().insert_parking_slot(slot):
+        if not db.SqlInsertQuery(db.SqlTableName.PARKINGSLOTS) \
+                    .insert(slot) \
+                    .execute(db.connector):
             reason = "Internal database error!"
             LOG.debug("New parking slots attempt [{}] aborted: {}".format(requestId, reason))
             abort(500, reason)
@@ -63,8 +65,9 @@ def new_parking_slots():
 @Authentication
 def parking_slots():
     requestId = utils.nextRequestId("slots_")
-
-    serializedSlots = Database.get_database().select_parking_slots()
+    serializedSlots = db.SqlSelectQuery(db.SqlTableName.PARKINGSLOTS) \
+                            .select(('*')) \
+                            .execute(db.connector)
     slots = utils.objectsToJson(ParkingSlot.deserialiaze_many(serializedSlots))
 
     message = {'slots': slots }

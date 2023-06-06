@@ -4,7 +4,10 @@ import os
 
 LOG = logging.getLogger(__name__)
 
-class DatabaseConnector:
+class DatabaseType:
+    sqlite3 = "sqlite3"
+
+class SQLite3DatabaseConnector:
     dbConnection = None
 
     def __init__(self):
@@ -32,7 +35,7 @@ class DatabaseConnector:
         cursor = self.dbConnection.cursor()
         return cursor.execute(command, parameters)
 
-    def insert(self, command, parameters = ()):
+    def insert(self, command, parameters = ()) -> bool:
         if not self.dbConnection:
             return False
         
@@ -54,8 +57,6 @@ class DatabaseConnector:
             return False
         return True
 
-
-
 def generateNewDatabase(databasePath, removeIfExist : bool = False):
     LOG.warn("Creating new database: {}, with flag removeIfExist as {}".format(databasePath, removeIfExist))
     if os.path.exists(databasePath) and removeIfExist:
@@ -72,7 +73,7 @@ def generateNewDatabase(databasePath, removeIfExist : bool = False):
         " Name TEXT,",
         " Login TEXT,",
         " Password TEXT,",
-        " Email"
+        " Email TEXT"
     ]
     DB.execute("CREATE TABLE USERS({})".format("".join(usersTable)))
 
