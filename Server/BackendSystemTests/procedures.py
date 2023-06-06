@@ -5,12 +5,11 @@ from Testing import Assert
 import consts
 import header
 from templates import *
-from Server.Backend import utils
+from Server.Backend.models.users import User
 
 def performUserRegistration(ctxt : TestCaseContext):
     user = t_user()
-    userPayload = utils.objectToJson(user)
-    registerResp : requests.Response = requests.post(ctxt.URL + consts.PATH.REGISTER, json=userPayload)
+    registerResp : requests.Response = requests.post(ctxt.URL + consts.PATH.REGISTER, json=user)
 
     Assert.EXPECT_EQUAL(registerResp.status_code, 201, registerResp.content.decode())
 
@@ -18,11 +17,10 @@ def performUserRegistration(ctxt : TestCaseContext):
 
     return user
 
-def performLogin(ctxt : TestCaseContext, user : User):
+def performLogin(ctxt : TestCaseContext, user : dict):
     userPayload = dict()
-    userPayload["login"] = user.login
-    userPayload["password"] = user.password
-
+    userPayload[User.Login] = user[User.Login]
+    userPayload[User.Password] = user[User.Password]
     loginResponse : requests.Response = requests.post(ctxt.URL + consts.PATH.LOGIN, json=userPayload)
     Assert.EXPECT_EQUAL(loginResponse.status_code, 201, loginResponse.content.decode())
 

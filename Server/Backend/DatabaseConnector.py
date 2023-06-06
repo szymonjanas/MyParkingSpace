@@ -79,16 +79,15 @@ def generateNewDatabase(databasePath, removeIfExist : bool = False):
 
     reservationsTable = [
         " ReservationId TEXT,",
+        " ParkingSlotId TEXT,",
         " UserProfileId INTEGER,",
         " ReservationDate TEXT,",
-        " ReservationTimeStart TEXT,",
-        " ReservationTimeEnd TEXT,",
-        " ReservationMadeDate TEXT,",
-        " ReservationMadeTime TEXT"
+        " ReservationMadeDateTime TEXT"
     ]
     DB.execute("CREATE TABLE RESERVATIONS({})".format("".join(reservationsTable)))
 
     parkingslotsTable = [
+        " ParkingSlotId TEXT,",
         " SlotNumber TEXT,",
         " Floor TEXT,",
         " PositionX INTEGER,",

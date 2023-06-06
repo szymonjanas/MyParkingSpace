@@ -1,58 +1,33 @@
-from models.model import Model
+from Server.Backend.models.model import Model
 
 class ParkingSlot(Model):
+    ParkingSlotId = "ParkingSlotId"
     SlotNumber = "SlotNumber"
     Floor = "Floor"
     PositionX = "PositionX"
     PositionY = "PositionY"
 
     def __init__(self,
+                 ParkingSlotId = "",
                  SlotNumber = "",
                  Floor = "",
                  PositionX = "",
                  PositionY = ""):
+        self.ParkingSlotId = ParkingSlotId
         self.SlotNumber = SlotNumber
         self.Floor = Floor
         self.PositionX = PositionX
         self.PositionY = PositionY
 
     @staticmethod
-    def deserialize(array, fixture = None):
-        if len(array) == 4:
-            return ParkingSlot(
-                array[0],
-                array[1],
-                array[2],
-                array[3]
-            )
-        else:
-            if not fixture:
-                return
-            SlotNumber = ""
-            Floor = ""
-            PositionX = ""
-            PositionY = ""
-            idx = 0
-            if ParkingSlot.SlotNumber in fixture:
-                SlotNumber = array[idx]
-                idx += 1
-
-            if ParkingSlot.Floor in fixture:
-                Floor = array[idx]
-                idx += 1
-
-            if ParkingSlot.PositionX in fixture:
-                PositionX = array[idx]
-                idx += 1
-            if ParkingSlot.PositionY in fixture:
-                PositionY = array[idx]
-
-            return ParkingSlot(
-                SlotNumber=SlotNumber,
-                Floor=Floor,
-                PositionX=PositionX,
-                PositionY=PositionY
-            )
+    def deserialize(array):
+        return ParkingSlot(
+            array[0],
+            array[1],
+            array[2],
+            array[3],
+            array[4]
+        )
 
     @staticmethod
     def deserialiaze_many(arrayOfArray):

@@ -1,18 +1,20 @@
-from models.model import Model
+from Server.Backend.models.model import Model
 
 class Reservation(Model):
+    ReservationId = "ReservationId"
+    ParkingSlotId = "ParkingSlotId"
+    UserProfileId = "UserProfileId"
+    ReservationDate = "ReservationDate"
+    ReservationMadeDateTime = "ReservationMadeDateTime"
+
     def __init__(self,
-                 ReservationId,
-                 SlotNumber,
-                 UserProfileId,
-                 ReservationDate,
-                 TimeStart,
-                 TimeEnd,
-                 DateAndTimeRegistration):
+                 ReservationId : str = "",
+                 ParkingSlotId : str = "",
+                 UserProfileId : str = "",
+                 ReservationDate : str = "",
+                 ReservationMadeDateTime : str = ""):
         self.ReservationId = ReservationId
-        self.SlotNumber = SlotNumber
+        self.ParkingSlotId = ParkingSlotId
         self.UserProfileId = UserProfileId
         self.ReservationDate = ReservationDate
-        self.TimeStart = TimeStart
-        self.TimeEnd = TimeEnd
-        self.DateAndTimeRegistration = DateAndTimeRegistration
+        self.ReservationMadeDateTime = ReservationMadeDateTime

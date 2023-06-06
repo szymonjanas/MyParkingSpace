@@ -4,6 +4,7 @@ import json
 from datetime import datetime
 import Database as db
 from  models.parkingslot import ParkingSlot
+from models.reservation import Reservation
 import utils
 from authentication import Authentication
 from services import common
@@ -30,10 +31,10 @@ def new_parking_slots():
     for serializedSlot in parkingSlotsData:
         try:
             slot = ParkingSlot(
-                serializedSlot["SlotNumber"],
-                serializedSlot["Floor"],
-                serializedSlot["PositionX"],
-                serializedSlot["PositionY"])
+                    SlotNumber= serializedSlot["SlotNumber"],
+                    Floor=      serializedSlot["Floor"],
+                    PositionX=  serializedSlot["PositionX"],
+                    PositionY=  serializedSlot["PositionY"])
             slots.append(slot)
         except:
             reason = "Cannot read slot from json data!"
@@ -50,7 +51,9 @@ def new_parking_slots():
         LOG.debug("New parking slots attempt [{}] aborted: {}".format(requestId, reason))
         abort(500, reason)
 
+
     for slot in slots:
+        slot.ParkingSlotId = '{}-{}'.format(slot.Floor, slot.SlotNumber)
         if not db.SqlInsertQuery(db.SqlTableName.PARKINGSLOTS) \
                     .insert(slot) \
                     .execute(db.connector):
@@ -73,6 +76,47 @@ def parking_slots():
     message = {'slots': slots }
     return Response(json.dumps(message), status=200, mimetype='application/json')
 
-# @api_spaceReservation.route("/reservation/new", methods = ['POST'])
-# @Authentication
-# def new_reservation():
+@api_spaceReservation.route("/reservation/new", methods = ['POST'])
+@Authentication
+def new_reservation():
+    requestId = utils.nextRequestId("new_reservation_")
+    LOG.info("New reservation attempt [{}] with data: {}".format(requestId, request.json))
+    try:
+        reservationData = request.json["reservation"]
+    except:
+        reason = "Json data not found!"
+        LOG.debug("New reservation attempt [{}] aborted: {}".format(requestId, reason))
+        abort(400, reason)
+
+    try:
+        reservation = Reservation(
+            ParkingSlotId=   reservationData["ParkingSlotId"],
+            UserProfileId=   reservationData["UserProfileId"],
+            ReservationDate= reservationData["ReservationDate"]
+        )
+    except:
+        reason = "Cannot read reservation parameters from json data!"
+        LOG.debug("New reservation attempt [{}] aborted: {}".format(requestId, reason))
+        abort(400, reason)
+    
+    isReserved = db.SqlSelectQuery(db.SqlTableName.RESERVATIONS) \
+                    .select((Reservation.ParkingSlotId, Reservation.ReservationDate)) \
+                    .where(db.SqlWhereBuilder()
+                                .addCondition({ Reservation.ReservationDate: reservation.ReservationDate }).get()) \
+                    .execute(db.connector)
+
+    if len(isReserved):
+        reason = "Parking slot at given date is already taken!"
+        LOG.debug("New reservation attempt [{}] aborted: {}".format(requestId, reason))
+        abort(409, reason)
+
+    reservation.ReservationId = "69"
+
+    todayDateTime = datetime.now().strftime("%d.%m.%Y %H:%M")
+    reservation.ReservationMadeDateTime = todayDateTime
+    db.SqlInsertQuery(db.SqlTableName.RESERVATIONS) \
+        .insert(reservation) \
+        .execute(db.connector)
+
+    message = {'message': "New reservation created!" }
+    return Response(json.dumps(message), status=201, mimetype='application/json')

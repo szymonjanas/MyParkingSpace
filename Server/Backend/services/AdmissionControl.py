@@ -18,19 +18,20 @@ def register():
 
     registerData = request.json
     requestId = utils.nextRequestId("reg_")
+    registerData = dict(registerData)
     LOG.info("Registration attempt [{}] with data: {}".format(requestId, request.json))
-    if not ("login" in registerData and 
-            "password" in registerData and 
-            "email" in registerData and
-            "name" in registerData):
+    if not (User.Login in registerData.keys() and 
+            User.Password in registerData.keys() and 
+            User.Email in registerData.keys() and
+            User.Name in registerData.keys()):
         reason = "At least one registration parameter is invalid!"
         LOG.warn("Registration [{}] aborted: {}".format(requestId, reason))
         abort(400, reason)
 
-    if (len(registerData["login"]) == 0 or
-        len(registerData["password"]) == 0 or 
-        len(registerData["email"]) == 0 or
-        len(registerData["name"]) == 0):
+    if (len(registerData[User.Login]) == 0 or
+        len(registerData[User.Password]) == 0 or 
+        len(registerData[User.Email]) == 0 or
+        len(registerData[User.Name]) == 0):
         reason = "At least one registration parameter is empty!"
         LOG.warn("Registration [{}] aborted: {}".format(requestId, reason))
         abort(400, reason)
@@ -40,12 +41,12 @@ def register():
                 .execute(db.connector)
     
     if len(dbRows) > 0:
-        if len(list(filter(lambda item: item[0]==registerData["login"], dbRows))):
-            reason = 'User with login {} is already registered!'.format(registerData["login"])
+        if len(list(filter(lambda item: item[0]==registerData[User.Login], dbRows))):
+            reason = 'User with login {} is already registered!'.format(registerData[User.Login])
             LOG.warn("Registration [{}] aborted: {}".format(requestId, reason))
             abort(400, reason)
-        if len(list(filter(lambda item: item[1]==registerData["email"], dbRows))):
-            reason = 'User with email {} is already registered!'.format(registerData["email"])
+        if len(list(filter(lambda item: item[1]==registerData[User.Email], dbRows))):
+            reason = 'User with email {} is already registered!'.format(registerData[User.Email])
             LOG.warn("Registration [{}] aborted: {}".format(requestId, reason))
             abort(400, reason)
 
@@ -55,10 +56,10 @@ def register():
     user = User(
         1,
         todayDate,
-        registerData["name"],
-        registerData["login"],
-        registerData["password"],
-        registerData["email"]
+        registerData[User.Name],
+        registerData[User.Login],
+        registerData[User.Password],
+        registerData[User.Email]
     )
 
     isSuccessfull = db.SqlInsertQuery(db.SqlTableName.USERS) \
@@ -84,20 +85,20 @@ def login():
     requestId = utils.nextRequestId("login_")
     LOG.info("Login attempt [{}] with data: {}".format(requestId, loginData))
 
-    if not ("login" in loginData and 
-            "password" in loginData):
+    loginData = dict(loginData)
+    if not (User.Login in loginData.keys() and 
+            User.Password in loginData.keys()):
         reason = "At least one login parameter is invalid!"
         LOG.warn("Login [{}] aborted: {}".format(requestId, reason))
         abort(400, reason)
 
-    if (len(loginData["login"]) == 0 or
-        len(loginData["password"]) == 0):
+    if (len(loginData[User.Login]) == 0 or
+        len(loginData[User.Password]) == 0):
         reason = "At least one login parameter is empty!"
         LOG.warn("Login [{}] aborted: {}".format(requestId, reason))
         abort(400, reason)
 
-    loginParam = loginData["login"]
-
+    loginParam = loginData[User.Login]
     dbRows = db.SqlSelectQuery(db.SqlTableName.USERS) \
                     .select((User.Login, User.Password)) \
                     .where(db.SqlWhereBuilder() \
@@ -109,7 +110,7 @@ def login():
         abort(400, reason)
 
     password = dbRows[0][1]
-    if not (password == loginData["password"]):
+    if not (password == loginData[User.Password]):
         reason = "Wrong password for user: {}!".format(loginParam)
         LOG.info("Login [{}] aborted: {}".format(requestId, reason))
         abort(400, reason)

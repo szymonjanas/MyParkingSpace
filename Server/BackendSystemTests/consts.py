@@ -5,3 +5,4 @@ class PATH:
     LOGOUT = "logout"
     PARKING_SLOTS = "parking/slots"
     NEW_PARKING_SLOTS = PARKING_SLOTS + "/new"
+    NEW_RESERVATION = "reservation/new"

@@ -1,4 +1,4 @@
-from models.model import Model
+from Server.Backend.models.model import Model
 
 class User(Model):
     UserProfileId = "UserProfileId"

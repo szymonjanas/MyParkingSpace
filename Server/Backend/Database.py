@@ -13,6 +13,7 @@ def init_database_connector(dbConnector : SQLite3DatabaseConnector):
 class SqlTableName:
     USERS = "USERS"
     PARKINGSLOTS = "PARKINGSLOTS"
+    RESERVATIONS = "RESERVATIONS"
 
 ###############
 ###  WHERE  ###
