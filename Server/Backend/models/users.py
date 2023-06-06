@@ -1,12 +1,12 @@
 
 
 class User:
-    UserProfileId : int
-    RegistrationDate : str
-    Name : str
-    Login : str
-    Password : str
-    Email : str
+    UserProfileId = "UserProfileId"
+    RegistrationDate = "RegistrationDate"
+    Name = "Name"
+    Login = "Login"
+    Password = "Password"
+    Email = "Email"
 
     def __init__(self,
                  UserProfileId : int,
@@ -21,40 +21,3 @@ class User:
         self.Login = Login
         self.Password = Password
         self.Email = Email
-
-    def toTuple(self):
-        return (
-            self.UserProfileId,
-            self.RegistrationDate,
-            self.Name,
-            self.Login,
-            self.Password,
-            self.Email
-        )
-
-    @staticmethod
-    def dbValues():
-        return "?,?,?,?,?,?"
-
-    @staticmethod
-    def toNamesFixture():
-        return "{},{},{},{},{},{}".format(
-            "UserProfileId",
-            "RegistrationDate",
-            "Name",
-            User.dbLogin(),
-            User.dbPassword(),
-            User.dbEmail()
-        )
-    
-    @staticmethod
-    def dbLogin():
-        return "Login"
-    
-    @staticmethod
-    def dbEmail():
-        return "Email"
-
-    @staticmethod
-    def dbPassword():
-        return "Password"

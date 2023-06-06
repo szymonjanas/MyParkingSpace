@@ -31,6 +31,7 @@ def new_parking_slots():
         try:
             slot = ParkingSlot(
                 serializedSlot["SlotNumber"],
+                serializedSlot["Floor"],
                 serializedSlot["PositionX"],
                 serializedSlot["PositionY"])
             slots.append(slot)
@@ -61,12 +62,14 @@ def new_parking_slots():
 @api_spaceReservation.route("/parking/slots", methods = ['GET'])
 @Authentication
 def parking_slots():
-    return "test"
-    # requestId = utils.nextRequestId("slots_")
-    # serializedSlots = Database.get_database().select_parking_slots()
-    # print(serializedSlots)
-    # slots = ParkingSlot.toJson(ParkingSlot.deserialiaze_many(serializedSlots))
-    # print(slots)
+    requestId = utils.nextRequestId("slots_")
 
-    # message = {'slots': slots }
-    # return Response(json.dumps(message), status=200, mimetype='application/json')
+    serializedSlots = Database.get_database().select_parking_slots()
+    slots = utils.objectsToJson(ParkingSlot.deserialiaze_many(serializedSlots))
+
+    message = {'slots': slots }
+    return Response(json.dumps(message), status=200, mimetype='application/json')
+
+# @api_spaceReservation.route("/reservation/new", methods = ['POST'])
+# @Authentication
+# def new_reservation():

@@ -7,6 +7,7 @@ from  models.users import User
 import utils
 import authentication
 from services import common
+from utils import toTuple
 
 api_admissionControlService = Blueprint("Admission Control Service", __name__)
 
@@ -34,7 +35,7 @@ def register():
         LOG.warn("Registration [{}] aborted: {}".format(requestId, reason))
         abort(400, reason)
 
-    dbRows = Database.get_database().select_all_users_details("{}, {}".format(User.dbLogin(), User.dbEmail()))
+    dbRows = Database.get_database().select_all_users_details("{}, {}".format(User.Login, User.Email))
     
     if len(dbRows) > 0:
         if len(list(filter(lambda item: item[0]==registerData["login"], dbRows))):
@@ -67,7 +68,7 @@ def register():
         LOG.error("Registration [{}] aborted: {}".format(requestId, reason))
         abort(500, reason)
 
-    LOG.info("Registration [{}] successfull, new user details: {}".format(requestId, user.toTuple()))
+    LOG.info("Registration [{}] successfull, new user details: {}".format(requestId, toTuple(user)))
     message = {'message': 'Successful registration!'}
     response = Response(json.dumps(message), status=201, mimetype='application/json')
     return response
@@ -92,8 +93,8 @@ def login():
 
     loginParam = loginData["login"]
     dbRows = Database.get_database().select_user_details_where(
-        ("{}, {}".format(User.dbLogin(), User.dbPassword())), 
-        ("{}='{}'".format(User.dbLogin(), loginParam)))
+        [User.Login, User.Password], 
+        {User.Login: loginParam})
     
     if (len(dbRows) == 0):
         reason = "User with login {} is not registered!".format(loginParam)

@@ -88,22 +88,9 @@ def generateNewDatabase(databasePath, removeIfExist : bool = False):
     DB.execute("CREATE TABLE RESERVATIONS({})".format("".join(reservationsTable)))
 
     parkingslotsTable = [
-        " SlotNumber INTEGER,",
-        " ReservationId TEXT,",
+        " SlotNumber TEXT,",
+        " Floor TEXT,",
         " PositionX INTEGER,",
         " PositionY INTEGER"
     ]
     DB.execute("CREATE TABLE PARKINGSLOTS({})".format("".join(parkingslotsTable)))
-
-
-    # FIXME DUMB GENERATION OF RANDOM DATA - has to be moved to tests module
-    DB.execute('INSERT INTO PARKINGSLOTS( "SlotNumber" ) VALUES ( "1" )')
-    databaseConnector.commit()
-    DB.execute('INSERT INTO PARKINGSLOTS( "SlotNumber" ) VALUES ( "2" )')
-    databaseConnector.commit()
-    DB.execute('INSERT INTO PARKINGSLOTS( "SlotNumber" ) VALUES ( "3" )')
-    databaseConnector.commit()
-    DB.execute('INSERT INTO PARKINGSLOTS( "SlotNumber" ) VALUES ( "4" )')
-    databaseConnector.commit()
-    DB.execute('INSERT INTO PARKINGSLOTS( "SlotNumber" ) VALUES ( "5" )')
-    databaseConnector.commit()
