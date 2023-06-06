@@ -98,3 +98,24 @@ def convertLogLevel(logLevelStr):
         return logging.WARNING
     if logLevelStr == "ERROR":
         return logging.ERROR
+
+def toTuple(dbObject):
+    dictObj : dict = dbObject.__dict__
+    return tuple(dictObj.values())
+
+def toNamesFixture(dbObject):
+    dictObj : dict = dbObject.__dict__
+    return ', '.join(dictObj.keys())
+
+def toDbValuesFixture(dbObject):
+    objCount = len(dbObject.__dict__.keys())
+    return ','.join(['?'] * objCount)
+
+def objectsToJson(objArray):
+    output = []
+    for item in objArray:
+        output.append(item.__dict__)
+    return output
+
+def objectToJson(obj : object):
+    return obj.__dict__
