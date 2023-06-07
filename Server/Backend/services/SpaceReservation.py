@@ -1,4 +1,4 @@
-from flask import Blueprint, request, Response, abort
+from flask import Blueprint, request, Response, abort, send_file
 import logging
 import json
 from datetime import datetime
@@ -11,6 +11,7 @@ from authentication import Authentication
 from services.common import isSessionValid
 import random
 import string
+import QrCodeGenerator
 
 api_spaceReservation = Blueprint("Space Reservation", __name__)
 
@@ -195,3 +196,26 @@ def delete_reservation(ReservationId):
 
     message = {"message": "Reservation deleted!"}
     return Response(message, 201, content_type='application/json')
+
+@api_spaceReservation.route("/reservation/qr/<ReservationId>", methods = ['GET'])
+@Authentication
+def qr_code_for_reservation(ReservationId):
+    requestId = utils.nextRequestId("qr_reservation_")
+    login, token = isSessionValid(LOG, requestId, request.headers)
+    LOG.info("Qr Code generation attempt [{}] for user: {}, ReservationId: {}".format(requestId, login, ReservationId))
+
+    dbAllReservations = db.SqlSelectQuery(db.SqlTableName.RESERVATIONS) \
+                        .select(['*']) \
+                        .where(db.SqlWhereBuilder() \
+                                    .addCondition({Reservation.ReservationId: ReservationId}) \
+                                    .get()) \
+                        .execute(db.connector)
+
+    if not len(dbAllReservations):
+        reason = "Reservation does not exits!"
+        LOG.debug("Delete reservation attempt [{}] aborted: {}".format(requestId, reason))
+        abort(400, reason)
+
+    qrImgByteBuff = QrCodeGenerator.generateQrCode(ReservationId)
+
+    return send_file(qrImgByteBuff, mimetype='image/jpeg')
