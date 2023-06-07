@@ -68,7 +68,6 @@ def generateNewDatabase(databasePath, removeIfExist : bool = False):
     DB = databaseConnector.cursor()
 
     usersTable = [
-        " UserProfileId INTEGER,",
         " RegistrationDate TEXT,",
         " Name TEXT,",
         " Login TEXT,",
@@ -80,7 +79,7 @@ def generateNewDatabase(databasePath, removeIfExist : bool = False):
     reservationsTable = [
         " ReservationId TEXT,",
         " ParkingSlotId TEXT,",
-        " UserProfileId INTEGER,",
+        " Login TEXT,",
         " ReservationDate TEXT,",
         " ReservationMadeDateTime TEXT"
     ]

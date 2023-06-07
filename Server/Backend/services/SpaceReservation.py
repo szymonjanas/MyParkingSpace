@@ -5,14 +5,26 @@ from datetime import datetime
 import Database as db
 from  models.parkingslot import ParkingSlot
 from models.reservation import Reservation
+from models.users import User
 import utils
 from authentication import Authentication
-from services import common
-
+from services.common import isSessionValid
+import random
+import string
 
 api_spaceReservation = Blueprint("Space Reservation", __name__)
 
 LOG = logging.getLogger(__name__)
+
+def __generateLetters__(num = 4):
+    letters = string.ascii_uppercase
+    return ''.join(random.choice(letters) for _ in range(num))
+
+def nextReservationId(reservationIdList : list):
+    reservationId = __generateLetters__()
+    while reservationId in reservationIdList:
+        reservationId = __generateLetters__()
+    return reservationId
 
 @api_spaceReservation.route("/parking/slots/new", methods = ['POST'])
 @Authentication
@@ -73,8 +85,8 @@ def parking_slots():
                             .execute(db.connector)
     slots = utils.objectsToJson(ParkingSlot.deserialiaze_many(serializedSlots))
 
-    message = {'slots': slots }
-    return Response(json.dumps(message), status=200, mimetype='application/json')
+    message = json.dumps({'slots': slots })
+    return Response(response=message, status=200, mimetype='application/json')
 
 @api_spaceReservation.route("/reservation/new", methods = ['POST'])
 @Authentication
@@ -90,18 +102,28 @@ def new_reservation():
 
     try:
         reservation = Reservation(
-            ParkingSlotId=   reservationData["ParkingSlotId"],
-            UserProfileId=   reservationData["UserProfileId"],
-            ReservationDate= reservationData["ReservationDate"]
+            ParkingSlotId=reservationData[Reservation.ParkingSlotId],
+            Login=reservationData[Reservation.Login],
+            ReservationDate=reservationData[Reservation.ReservationDate]
         )
     except:
         reason = "Cannot read reservation parameters from json data!"
         LOG.debug("New reservation attempt [{}] aborted: {}".format(requestId, reason))
         abort(400, reason)
+
+    isUser = db.SqlSelectQuery(db.SqlTableName.USERS) \
+                .select([User.Login]) \
+                .where(db.SqlWhereBuilder().addCondition({User.Login: reservation.Login}).get()) \
+                .execute(db.connector)
     
+    if not len(isUser):
+        reason = "Login do not exist!"
+        LOG.debug("New reservation attempt [{}] aborted: {}".format(requestId, reason))
+        abort(401, reason)
+
     isReserved = db.SqlSelectQuery(db.SqlTableName.RESERVATIONS) \
                     .select((Reservation.ParkingSlotId, Reservation.ReservationDate)) \
-                    .where(db.SqlWhereBuilder()
+                    .where(db.SqlWhereBuilder() \
                                 .addCondition({ Reservation.ReservationDate: reservation.ReservationDate }).get()) \
                     .execute(db.connector)
 
@@ -110,13 +132,36 @@ def new_reservation():
         LOG.debug("New reservation attempt [{}] aborted: {}".format(requestId, reason))
         abort(409, reason)
 
-    reservation.ReservationId = "69"
+    dbReservationsIds = db.SqlSelectQuery(db.SqlTableName.RESERVATIONS) \
+                        .select([Reservation.ReservationId]) \
+                        .execute(db.connector)
+    
+    reservation.ReservationId = nextReservationId(dbReservationsIds)
+    reservation.ReservationMadeDateTime = datetime.now().strftime("%d.%m.%Y %H:%M")
 
-    todayDateTime = datetime.now().strftime("%d.%m.%Y %H:%M")
-    reservation.ReservationMadeDateTime = todayDateTime
     db.SqlInsertQuery(db.SqlTableName.RESERVATIONS) \
         .insert(reservation) \
         .execute(db.connector)
 
-    message = {'message': "New reservation created!" }
-    return Response(json.dumps(message), status=201, mimetype='application/json')
+    message = json.dumps(reservation.__dict__)
+    return Response(response=message, status=201, mimetype='application/json')
+
+
+@api_spaceReservation.route("/reservation/all", methods = ['GET'])
+@Authentication
+def get_all_reservation():
+    requestId = utils.nextRequestId("new_reservation_")
+    login, token = isSessionValid(LOG, requestId, request.headers)
+    LOG.info("Get all reservations attempt [{}] for user: {}".format(requestId, login))
+
+    dbAllReservations = db.SqlSelectQuery(db.SqlTableName.RESERVATIONS) \
+                        .select(['*']) \
+                        .where(db.SqlWhereBuilder() \
+                                    .addCondition({Reservation.Login: login}) \
+                                    .get()) \
+                        .execute(db.connector)
+
+    dictAllReservations = Reservation.deserialize(dbAllReservations)
+
+    message = json.dumps(dictAllReservations)
+    return Response(message, 200, content_type='application/json')

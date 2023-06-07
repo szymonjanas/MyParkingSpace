@@ -1,13 +1,12 @@
 from flask import Blueprint, request, Response, abort
 import logging
 import json
-from datetime import datetime
+import datetime
 import Database as db
-from  models.users import User
-import utils
-import authentication
-from services import common
-from utils import toTuple
+from models.users import User
+import authentication as auth
+from services.common import retreiveAuthorizationToken
+from utils import toTuple, nextRequestId
 
 api_admissionControlService = Blueprint("Admission Control Service", __name__)
 
@@ -17,7 +16,7 @@ LOG = logging.getLogger(__name__)
 def register():
 
     registerData = request.json
-    requestId = utils.nextRequestId("reg_")
+    requestId = nextRequestId("reg_")
     registerData = dict(registerData)
     LOG.info("Registration attempt [{}] with data: {}".format(requestId, request.json))
     if not (User.Login in registerData.keys() and 
@@ -38,6 +37,10 @@ def register():
 
     dbRows = db.SqlSelectQuery(db.SqlTableName.USERS) \
                 .select((User.Login, User.Email)) \
+                .where(db.SqlWhereBuilder() \
+                    .addCondition({User.Login: registerData[User.Login]}) \
+                    .addCondition({User.Email: registerData[User.Email]}, db.SqlConditionConcatenator.OR) \
+                    .get()) \
                 .execute(db.connector)
     
     if len(dbRows) > 0:
@@ -50,17 +53,19 @@ def register():
             LOG.warn("Registration [{}] aborted: {}".format(requestId, reason))
             abort(400, reason)
 
+    try:
+        user = User(
+            None,
+            registerData[User.Name],
+            registerData[User.Login],
+            registerData[User.Password],
+            registerData[User.Email]
+        )
+    except Exception as ex:
+        LOG.warn("Registration [{}] aborted: {}".format(requestId, ex))
+        abort(400, ex)
 
-    nowTime = datetime.now()
-    todayDate = nowTime.strftime("%d.%m.%Y")
-    user = User(
-        1,
-        todayDate,
-        registerData[User.Name],
-        registerData[User.Login],
-        registerData[User.Password],
-        registerData[User.Email]
-    )
+    user.RegistrationDate = datetime.datetime.now().strftime("%d.%m.%Y")
 
     isSuccessfull = db.SqlInsertQuery(db.SqlTableName.USERS) \
                         .insert(user) \
@@ -82,7 +87,7 @@ def register():
 @api_admissionControlService.route("/login", methods = ['POST'])
 def login():
     loginData = request.json
-    requestId = utils.nextRequestId("login_")
+    requestId = nextRequestId("login_")
     LOG.info("Login attempt [{}] with data: {}".format(requestId, loginData))
 
     loginData = dict(loginData)
@@ -115,7 +120,7 @@ def login():
         LOG.info("Login [{}] aborted: {}".format(requestId, reason))
         abort(400, reason)
 
-    token = authentication.generateSessionToken(loginParam)
+    token = auth.generateSessionToken(loginParam)
 
     message = {'token': token }
     response = Response(json.dumps(message), status=201, mimetype='application/json')
@@ -123,11 +128,11 @@ def login():
     
 @api_admissionControlService.route("/logout", methods = ['POST'])
 def logout():
-    requestId = utils.nextRequestId("logout_")
+    requestId = nextRequestId("logout_")
 
-    token = common.retreiveAuthorizationToken(LOG, requestId, request.headers)
+    token = retreiveAuthorizationToken(LOG, requestId, request.headers)
 
-    hasRemoved : bool = authentication.removeSession(token)
+    hasRemoved : bool = auth.removeSession(token)
     if not hasRemoved:
         reason = "Session do not exist for token: {}!".format(token)
         LOG.info("Logout [{}] aborted: {}".format(requestId, reason))

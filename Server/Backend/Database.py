@@ -32,10 +32,8 @@ class SqlWhereBuilder:
         self.conditionList = list()
 
     def addCondition(self, condition : dict, concatenator = SqlConditionConcatenator.AND):
-        if len(condition.keys()) > 1:
-            self.addConditions(condition, concatenator)
         for key, value in condition.items():
-            if len(self.conditionList) > 1:
+            if len(self.conditionList):
                 self.conditionList.append(concatenator)
             self.conditionList.append("{}='{}'".format(key, value))
         return self
