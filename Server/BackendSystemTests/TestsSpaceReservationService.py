@@ -160,3 +160,27 @@ def test_201_reservation_whenThreeNewReservationAcceptedAndRequestDeleteReservat
         recvArr=receivedArr[1:],
         expectArr=expectedArr[1:],
         fixture=list(expectedArr[1].keys()))
+
+@TestCase(__name__)
+def test_200_reservation_qr_code_whenCreatedReservationAndRequestQrCode_thenResponseWithQrCodePng(ctxt : TestCaseContext):
+    
+    user = performUserRegistration(ctxt)
+    token = performLogin(ctxt, user)
+
+    reservation, newReservationReponse = performNewReservation(ctxt, t_reservation(user[User.Login]), token)
+
+    reservationResp = json.loads(newReservationReponse.content.decode())
+    Assert.EXPECT_EQUAL(newReservationReponse.status_code, 201, newReservationReponse.content.decode())
+    Assert.EXPECT_DICT_WITH_FIXTURE(
+        recvDict=reservationResp, 
+        expectDict=reservation, 
+        fixture=list(reservation.keys()))
+    
+    qrCodeResponse : requests.Response = requests.get(
+        url=ctxt.URL + consts.PATH.QR_CODE_RESERVATION + '{}'.format(reservationResp[Reservation.ReservationId]), 
+        headers=header.AUTHORIZATION(token))
+
+    Assert.EXPECT_EQUAL(qrCodeResponse.headers['Content-Type'], 'image/jpeg')
+
+    with open('logs/qrcode.jpeg', 'wb') as f:
+        f.write(qrCodeResponse.content)
