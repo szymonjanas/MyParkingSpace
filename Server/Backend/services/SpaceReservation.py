@@ -150,7 +150,7 @@ def new_reservation():
 @api_spaceReservation.route("/reservation/all", methods = ['GET'])
 @Authentication
 def get_all_reservation():
-    requestId = utils.nextRequestId("new_reservation_")
+    requestId = utils.nextRequestId("get_all_reservations")
     login, token = isSessionValid(LOG, requestId, request.headers)
     LOG.info("Get all reservations attempt [{}] for user: {}".format(requestId, login))
 
@@ -165,3 +165,33 @@ def get_all_reservation():
 
     message = json.dumps(dictAllReservations)
     return Response(message, 200, content_type='application/json')
+# check if return empty list
+
+@api_spaceReservation.route("/reservation/<ReservationId>", methods = ['DELETE'])
+@Authentication
+def delete_reservation(ReservationId):
+    requestId = utils.nextRequestId("new_reservation_")
+    login, token = isSessionValid(LOG, requestId, request.headers)
+    LOG.info("Delete reservation attempt [{}] for user: {}, ReservationId: {}".format(requestId, login, ReservationId))
+
+    dbAllReservations = db.SqlSelectQuery(db.SqlTableName.RESERVATIONS) \
+                        .select(['*']) \
+                        .where(db.SqlWhereBuilder() \
+                                    .addCondition({Reservation.ReservationId: ReservationId}) \
+                                    .get()) \
+                        .execute(db.connector)
+
+    if not len(dbAllReservations):
+        reason = "Reservation does not exits!"
+        LOG.debug("Delete reservation attempt [{}] aborted: {}".format(requestId, reason))
+        abort(400, reason)
+
+    db.SqlDeleteQuery(db.SqlTableName.RESERVATIONS) \
+        .delete() \
+        .where(db.SqlWhereBuilder() \
+                    .addCondition({Reservation.ReservationId: ReservationId}) \
+                    .get()) \
+        .execute(db.connector)
+
+    message = {"message": "Reservation deleted!"}
+    return Response(message, 201, content_type='application/json')

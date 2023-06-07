@@ -124,7 +124,7 @@ class SqlDeleteQueryExecutor:
     
     def execute(self, dbConnector : SQLite3DatabaseConnector):
         LOG.debug("new delete request: {}".format(self.deleteQuery.__dict__))
-        return dbConnector.select(self.deleteQuery.query)
+        return dbConnector.delete(self.deleteQuery.query)
 
 class SqlDeleteQuery:
     def __init__(self, tableName : str):
