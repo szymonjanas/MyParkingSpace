@@ -18,3 +18,13 @@ class User(Model):
         self.Login = Login
         self.Password = Password
         self.Email = Email
+
+    @staticmethod
+    def deserialize(dbUser : dict):
+        return User(
+            dbUser[0],
+            dbUser[0],
+            dbUser[0],
+            dbUser[0],
+            dbUser[0]
+        )

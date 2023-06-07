@@ -11,7 +11,7 @@ from authentication import Authentication
 from services.common import isSessionValid
 import random
 import string
-import QrCodeGenerator
+from QrCodeGenerator import QrCodeGenerator
 
 api_spaceReservation = Blueprint("Space Reservation", __name__)
 
@@ -114,7 +114,7 @@ def new_reservation():
 
     isUser = db.SqlSelectQuery(db.SqlTableName.USERS) \
                 .select([User.Login]) \
-                .where(db.SqlWhereBuilder().addCondition({User.Login: reservation.Login}).get()) \
+                .where(db.SqlWhere().addCondition({User.Login: reservation.Login}).get()) \
                 .execute(db.connector)
     
     if not len(isUser):
@@ -124,7 +124,7 @@ def new_reservation():
 
     isReserved = db.SqlSelectQuery(db.SqlTableName.RESERVATIONS) \
                     .select((Reservation.ParkingSlotId, Reservation.ReservationDate)) \
-                    .where(db.SqlWhereBuilder() \
+                    .where(db.SqlWhere() \
                                 .addCondition({ Reservation.ReservationDate: reservation.ReservationDate }).get()) \
                     .execute(db.connector)
 
@@ -157,7 +157,7 @@ def get_all_reservation():
 
     dbAllReservations = db.SqlSelectQuery(db.SqlTableName.RESERVATIONS) \
                         .select(['*']) \
-                        .where(db.SqlWhereBuilder() \
+                        .where(db.SqlWhere() \
                                     .addCondition({Reservation.Login: login}) \
                                     .get()) \
                         .execute(db.connector)
@@ -177,7 +177,7 @@ def delete_reservation(ReservationId):
 
     dbAllReservations = db.SqlSelectQuery(db.SqlTableName.RESERVATIONS) \
                         .select(['*']) \
-                        .where(db.SqlWhereBuilder() \
+                        .where(db.SqlWhere() \
                                     .addCondition({Reservation.ReservationId: ReservationId}) \
                                     .get()) \
                         .execute(db.connector)
@@ -189,7 +189,7 @@ def delete_reservation(ReservationId):
 
     db.SqlDeleteQuery(db.SqlTableName.RESERVATIONS) \
         .delete() \
-        .where(db.SqlWhereBuilder() \
+        .where(db.SqlWhere() \
                     .addCondition({Reservation.ReservationId: ReservationId}) \
                     .get()) \
         .execute(db.connector)
@@ -206,7 +206,7 @@ def qr_code_for_reservation(ReservationId):
 
     dbAllReservations = db.SqlSelectQuery(db.SqlTableName.RESERVATIONS) \
                         .select(['*']) \
-                        .where(db.SqlWhereBuilder() \
+                        .where(db.SqlWhere() \
                                     .addCondition({Reservation.ReservationId: ReservationId}) \
                                     .get()) \
                         .execute(db.connector)
@@ -216,6 +216,5 @@ def qr_code_for_reservation(ReservationId):
         LOG.debug("Delete reservation attempt [{}] aborted: {}".format(requestId, reason))
         abort(400, reason)
 
-    qrImgByteBuff = QrCodeGenerator.generateQrCode(ReservationId)
-
-    return send_file(qrImgByteBuff, mimetype='image/jpeg')
+    qrImgByteBuff = QrCodeGenerator().generateBytes(ReservationId)
+    return send_file(qrImgByteBuff, mimetype='image/png')

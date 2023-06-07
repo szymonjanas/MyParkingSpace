@@ -37,7 +37,7 @@ def register():
 
     dbRows = db.SqlSelectQuery(db.SqlTableName.USERS) \
                 .select((User.Login, User.Email)) \
-                .where(db.SqlWhereBuilder() \
+                .where(db.SqlWhere() \
                     .addCondition({User.Login: registerData[User.Login]}) \
                     .addCondition({User.Email: registerData[User.Email]}, db.SqlConditionConcatenator.OR) \
                     .get()) \
@@ -106,7 +106,7 @@ def login():
     loginParam = loginData[User.Login]
     dbRows = db.SqlSelectQuery(db.SqlTableName.USERS) \
                     .select((User.Login, User.Password)) \
-                    .where(db.SqlWhereBuilder() \
+                    .where(db.SqlWhere() \
                             .addCondition({User.Login: loginParam}).get()) \
                     .execute(db.connector)
     if (len(dbRows) == 0):

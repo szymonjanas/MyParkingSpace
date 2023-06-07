@@ -27,7 +27,7 @@ class SqlWhereCondition:
     def __init__(self, conditions):
         self.conditions = conditions
 
-class SqlWhereBuilder:
+class SqlWhere:
     def __init__(self):
         self.conditionList = list()
 
