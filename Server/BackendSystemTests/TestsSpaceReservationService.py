@@ -180,7 +180,7 @@ def test_200_reservation_qr_code_whenCreatedReservationAndRequestQrCode_thenResp
         url=ctxt.URL + consts.PATH.QR_CODE_RESERVATION + '{}'.format(reservationResp[Reservation.ReservationId]), 
         headers=header.AUTHORIZATION(token))
 
-    Assert.EXPECT_EQUAL(qrCodeResponse.headers['Content-Type'], 'image/jpeg')
+    Assert.EXPECT_EQUAL(qrCodeResponse.headers['Content-Type'], 'image/png')
 
-    with open('logs/qrcode.jpeg', 'wb') as f:
+    with open('logs/qrcode.png', 'wb') as f:
         f.write(qrCodeResponse.content)
