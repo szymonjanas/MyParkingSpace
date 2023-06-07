@@ -38,13 +38,13 @@ pre-reservation during check - has to be confirmed in 15 min, generate Reservati
 ### DATABASE
 TABLE: **USERS**
 
-`|UserProfileId|Registration date|UserName|Login|Password|Email|`
+`|RegistrationDate|Name|Login|Password|Email|`
 
 TABLE: **RESERVATIONS**
 
-`|ReservationId|SlotNumber|UserProfileId|Reservation Date|Time Start|Time End|Date when it was made|Time when it was made|`
+`|ReservationId|ParkingSlotId|Login|ReservationDate|ReservationMadeDateTime|`
 
 TABLE: **PARKINGSLOTS**
-`|SlotNumber|PositionX|PositionY|`
+`|ParkingSlotId|SlotNumber|Floor|PositionX|PositionY|`
 
 [AdmissionControlClassDiagram](docs/diagrams/AdmissionControlClassDiagram.md)
