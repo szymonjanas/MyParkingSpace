@@ -1,5 +1,7 @@
 **/__pycache__
 **.log
 **.sqlite
+Server/logs/*.jpeg
+Server/logs/*.png
 venv/
 Server.egg-info/
