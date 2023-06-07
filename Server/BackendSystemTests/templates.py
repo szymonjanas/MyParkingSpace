@@ -2,16 +2,14 @@ from Server.Backend.models.reservation import Reservation
 from Server.Backend.models.parkingslot import ParkingSlot
 from Server.Backend.models.users import User
 
-def t_user() -> User:
+def t_user() -> dict:
     user = User(
-            UserProfileId = None,
             RegistrationDate = None,
             Name = "Piotr Kowalski",
             Login = "pkowalski",
             Password = "piotrkowalski123",
             Email = "piotr.kowalski@poczta.com"
         ).__dict__
-    user.pop(User.UserProfileId)
     user.pop(User.RegistrationDate)
     return user
 
@@ -41,12 +39,12 @@ def generateParkingSlots(Floor = 1):
 t_parkingSlots = generateParkingSlots()
 
 
-def generateReservation():
+def t_reservation(login):
 
     reservation : dict = Reservation(
         ReservationId=None,
         ParkingSlotId="1-12",
-        UserProfileId="1",
+        Login=login,
         ReservationDate="12-06-2023",
         ReservationMadeDateTime=None 
     ).__dict__
@@ -55,5 +53,3 @@ def generateReservation():
     reservation.pop(Reservation.ReservationMadeDateTime)
      
     return reservation
-
-t_reservation = generateReservation()

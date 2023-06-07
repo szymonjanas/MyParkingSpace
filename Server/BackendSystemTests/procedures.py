@@ -34,3 +34,11 @@ def performLogout(ctxt : TestCaseContext, token):
     logoutResponse : requests.Response = requests.post(ctxt.URL + consts.PATH.LOGOUT, headers=header.AUTHORIZATION(token))
     Assert.EXPECT_EQUAL(logoutResponse.status_code, 201, logoutResponse.content.decode())
     Assert.EXPECT_PHRASE_IN_STRING("Logout complete!", logoutResponse.content.decode())
+
+def performNewReservation(ctxt : TestCaseContext, reservation : dict, token : str):
+    newReservation = { "reservation" : reservation }
+    newReservationReponse : requests.Response = requests.post(
+        url=ctxt.URL + consts.PATH.NEW_RESERVATION, 
+        json=newReservation, 
+        headers=header.AUTHORIZATION(token))
+    return reservation, newReservationReponse
