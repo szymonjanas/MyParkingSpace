@@ -114,3 +114,49 @@ def test_200_reservation_whenThreeNewReservationAcceptedAndRequestGetAllReservat
         recvArr=receivedArr,
         expectArr=expectedArr,
         fixture=list(expectedArr[0].keys()))
+
+@TestCase(__name__)
+def test_201_reservation_whenThreeNewReservationAcceptedAndRequestDeleteReservation_thenDeleteReservationForUser(ctxt : TestCaseContext):
+    
+    user = performUserRegistration(ctxt)
+    token = performLogin(ctxt, user)
+
+    # 3 new reservations
+    reservation, firstReservationReponse = performNewReservation(ctxt, t_reservation(user[User.Login]), token)
+    reservation[Reservation.ReservationDate] = "20-06-2023"
+    _, secondNewReservationReponse = performNewReservation(ctxt, reservation, token)
+    reservation[Reservation.ReservationDate] = "21-06-2023"
+    _, thirdNewReservationReponse = performNewReservation(ctxt, reservation, token)
+    
+    getAllReservations : requests.Response = requests.get(
+        url=ctxt.URL + consts.PATH.GET_ALL_RESERVATION, 
+        headers=header.AUTHORIZATION(token))
+    
+    Assert.EXPECT_EQUAL(getAllReservations.status_code, 200, getAllReservations.content.decode())
+
+    expectedArr = [json.loads(firstReservationReponse.content.decode()),
+                   json.loads(secondNewReservationReponse.content.decode()),
+                   json.loads(thirdNewReservationReponse.content.decode())]
+    receivedArr = json.loads(getAllReservations.content.decode())
+    Assert.EXPECT_EQUAL_SORTED_ARRAY_WITH_FIXTURE(
+        recvArr=receivedArr,
+        expectArr=expectedArr,
+        fixture=list(expectedArr[0].keys()))
+    
+    # delete first reservation
+    deleteReservationResponse : requests.Response = requests.delete(
+        url=ctxt.URL + consts.PATH.DELETE_RESERVATION + '{}'.format(expectedArr[0][Reservation.ReservationId]), 
+        headers=header.AUTHORIZATION(token))
+    
+    Assert.EXPECT_EQUAL(deleteReservationResponse.status_code, 201, deleteReservationResponse.content.decode())
+
+    # confirm if first reservation has been deleted 
+    getAllReservationsAfterDeleteResponse : requests.Response = requests.get(
+        url=ctxt.URL + consts.PATH.GET_ALL_RESERVATION, 
+        headers=header.AUTHORIZATION(token))
+    
+    Assert.EXPECT_EQUAL(getAllReservationsAfterDeleteResponse.status_code, 200, getAllReservationsAfterDeleteResponse.content.decode())
+    Assert.EXPECT_EQUAL_SORTED_ARRAY_WITH_FIXTURE(
+        recvArr=receivedArr[1:],
+        expectArr=expectedArr[1:],
+        fixture=list(expectedArr[1].keys()))

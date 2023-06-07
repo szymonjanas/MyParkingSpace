@@ -7,3 +7,4 @@ class PATH:
     NEW_PARKING_SLOTS = PARKING_SLOTS + "/new"
     NEW_RESERVATION = "reservation/new"
     GET_ALL_RESERVATION = "reservation/all"
+    DELETE_RESERVATION = "reservation/"
