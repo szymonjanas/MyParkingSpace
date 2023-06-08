@@ -15,10 +15,20 @@ if __name__ == "__main__":
     if testLogLevel:
         stContext.setLogLevel(testLogLevel)
         stContext.initLogging()
+
     if enforceSystem == "linux":
         stContext.setSystem(context.System.linux)
     elif enforceSystem == "ci-linux":
         stContext.setSystem(context.System.ci_linux)
+
+    if args.GetArg("emailconfig"):
+        stContext.setEmailConfig()
+
+    if args.GetArg("emailaddress"):
+        stContext.setEmailAddress(args.GetArg("emailaddress"))
+
+    if args.GetArg("emailpassword"):
+        stContext.setEmailPassword(args.GetArg("emailpassword"))
 
     SystemTest.systemTestContext = stContext
 

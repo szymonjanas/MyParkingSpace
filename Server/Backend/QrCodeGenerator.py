@@ -38,7 +38,7 @@ class QrCodeGenerator:
         descriptionImage.paste(self.imgQrCode, (0, 0))
 
         descriptionDraw.text(
-            (45, self.imgQrCode.height-10), 
+            (40, self.imgQrCode.height-10), 
             self.text, 
             font=ImageFont.truetype("Backend/fonts/Lato-Bold.ttf", 42), 
             fill="black")

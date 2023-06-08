@@ -88,8 +88,18 @@ class TestCaseContext:
              "--logfilepath", self.logFilePath,
              "--databasepath", systemTestContext.databasePath,
              "--newdatabase",
-             "--loglevel", convertLogLevel(systemTestContext.loglevel) 
+             "--loglevel", convertLogLevel(systemTestContext.loglevel),
+             "--testmode"
              ]
+
+        if bool(systemTestContext.emailAddress) and bool(systemTestContext.emailPassword):
+            cmd.append("--emailaddress")
+            cmd.append(systemTestContext.emailAddress)
+            cmd.append("--emailpassword")
+            cmd.append(systemTestContext.emailPassword)
+        elif systemTestContext.emailConfig:
+            cmd.append("--emailconfig")
+
         if systemTestContext.IsDebug():
             self.SUT = subprocess.Popen(
                 cmd,
@@ -100,6 +110,10 @@ class TestCaseContext:
                 shell=False,
                 stdout=subprocess.DEVNULL,
                 stderr=subprocess.DEVNULL)
+
+        if bool(systemTestContext.emailAddress) and bool(systemTestContext.emailPassword):
+            cmd = self.__make_secrets_not_readable__(cmd)
+
         self.LOG.debug("Test run with command: {}".format(" ".join(cmd)))
         self.connectToBackend()
         self.LOG.debug("SystemTest connected to Backend Server successfully!")
@@ -110,6 +124,15 @@ class TestCaseContext:
                 self.SUT.wait(timeout=3)
             except subprocess.TimeoutExpired:
                 self.__kill_process__(self.SUT.pid)
+
+    def __make_secrets_not_readable__(self, cmd):
+        idx = 0
+        while idx < len(cmd):
+            if "emailaddress" in cmd[idx] \
+                or "emailpassword" in cmd[idx]:
+                cmd[idx + 1] = "***"
+            idx += 1
+        return cmd
 
 class TestCaseContextGenerator:
     __ip_address_default__ = "127.0.0.0"

@@ -20,6 +20,10 @@ class SupportedArgs:
     databasepath = "databasepath"
     newdatabase = "newdatabase"
     databasetype = "databasetype"
+    emailpassword = "emailpassword"
+    emailaddress  = "emailaddress"
+    emailconfig = "emailconfig"
+    testmode = "testmode"
 
 class ApplicationConfig:
     def __init__(self,
@@ -29,7 +33,11 @@ class ApplicationConfig:
                  logLevel : int = None,
                  databasePath : str = None,
                  newDatabase : bool = None,
-                 databasetype : str = None):
+                 databasetype : str = None,
+                 emailPassword : str = None,
+                 emailAddress : str = None,
+                 emailConfig : bool = None,
+                 testMode : bool = None):
         self.ipAddress : str = ipAddress
         self.port : str = port
         self.logFilePath : str = logFilePath
@@ -37,6 +45,10 @@ class ApplicationConfig:
         self.databasePath : str = databasePath
         self.newDatabase : bool = newDatabase
         self.databaseType : str = databasetype
+        self.emailPassword : str = emailPassword
+        self.emailAddress : str = emailAddress
+        self.emailConfig : bool = emailConfig
+        self.testMode : bool = testMode
 
 class ArgvDeserializer:
     argv = []
@@ -51,7 +63,6 @@ class ArgvDeserializer:
         idx : int = 1 # skip app name
         while idx < len(self.argv):
             arg : str = self.argv[idx]
-            
             if arg.startswith('--'):
                 argValueOrNone = self.isDoubleArgument(idx)
                 if self.isSingleArgument(idx):

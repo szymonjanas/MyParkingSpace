@@ -8,11 +8,11 @@ class User(Model):
     Email = "Email"
 
     def __init__(self,
-                 RegistrationDate : str,
-                 Name : str,
-                 Login : str,
-                 Password : str,
-                 Email : str):
+                 RegistrationDate : str = "",
+                 Name : str = "",
+                 Login : str = "",
+                 Password : str = "",
+                 Email : str = ""):
         self.RegistrationDate = RegistrationDate
         self.Name = Name
         self.Login = Login
@@ -20,11 +20,15 @@ class User(Model):
         self.Email = Email
 
     @staticmethod
-    def deserialize(dbUser : dict):
-        return User(
-            dbUser[0],
-            dbUser[0],
-            dbUser[0],
-            dbUser[0],
-            dbUser[0]
-        )
+    def deserialize(array : list):
+        for item in array:
+            output = []
+            output.append(
+                User(
+                    item[0],
+                    item[1],
+                    item[2],
+                    item[3],
+                    item[4]
+                ))
+        return output

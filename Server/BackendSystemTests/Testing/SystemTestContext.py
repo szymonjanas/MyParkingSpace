@@ -14,7 +14,9 @@ class SystemTestContext:
     logFilePath : str = consts.LOGS_FILE_PATH
     databasePath : str = consts.DATABASE_TEST_PATH
     logDirectoryPath : str = consts.LOG_DIRECTORY_PATH
-
+    emailConfig : bool = False
+    emailAddress : str = ""
+    emailPassword : str = ""
     def __init__(self):
         self.clearLogFile()
         self.initLogging()
@@ -36,6 +38,15 @@ class SystemTestContext:
     
     def getSystem(self):
         return self.system
+
+    def setEmailConfig(self):
+        self.emailConfig = True
+
+    def setEmailAddress(self, email):
+        self.emailAddress = email
+
+    def setEmailPassword(self, password):
+        self.emailPassword = password
 
     def setLogLevel(self, loglevel):
         self.loglevel = loglevel

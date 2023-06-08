@@ -43,7 +43,7 @@ def t_reservation(login):
 
     reservation : dict = Reservation(
         ReservationId=None,
-        ParkingSlotId="1-12",
+        ParkingSlotId="0-12",
         Login=login,
         ReservationDate="12-06-2023",
         ReservationMadeDateTime=None 

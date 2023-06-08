@@ -26,3 +26,5 @@ IP_ADDRESS = getFromConfig("defaults", "ipAddress")
 PORT  = getFromConfig("defaults", "port")
 
 LOG_LEVEL_DEFAULT = logging.INFO
+
+TEST_MODE = False

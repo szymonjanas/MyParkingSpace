@@ -7,12 +7,7 @@ import header
 import json
 from Server.Backend.models.parkingslot import ParkingSlot
 
-@TestCase(__name__)
-def test_200_parkingslots_whenUserLoginAndNewParkingSlotsSent_thenAddSlotsToDatabase(ctxt : TestCaseContext):
-
-    user = performUserRegistration(ctxt)
-    token = performLogin(ctxt, user)
-
+def performAddNewParkingSlots(ctxt, token):
     newParkingSlots = { "parkingslots" : t_parkingSlots }
     newParkingSlotsReponse : requests.Response = requests.post(
         url=ctxt.URL + consts.PATH.NEW_PARKING_SLOTS, 
@@ -34,6 +29,15 @@ def test_200_parkingslots_whenUserLoginAndNewParkingSlotsSent_thenAddSlotsToData
     Assert.EXPECT_EQUAL_SORTED_ARRAY_WITH_FIXTURE(
         recvArr, exepArr, 
         [ParkingSlot.SlotNumber, ParkingSlot.PositionX, ParkingSlot.PositionY, ParkingSlot.Floor])
+
+
+@TestCase(__name__)
+def test_200_parkingslots_whenUserLoginAndNewParkingSlotsSent_thenAddSlotsToDatabase(ctxt : TestCaseContext):
+
+    user = performUserRegistration(ctxt)
+    token = performLogin(ctxt, user)
+    performAddNewParkingSlots(ctxt, token)
+
 
 @TestCase(__name__)
 def test_201_reservation_whenUserLoginAndNewRequestReservation_thenCreateReservation(ctxt : TestCaseContext):
@@ -68,9 +72,11 @@ def test_409_reservation_whenNewRequestReservationOnSlotWhichIsTaken(ctxt : Test
 
 @TestCase(__name__)
 def test_201_reservation_whenNewRequestReservationOnSameSlotButDifferentDay_thenCreateReservation(ctxt : TestCaseContext):
-    
+
     user = performUserRegistration(ctxt)
     token = performLogin(ctxt, user)
+
+    performAddNewParkingSlots(ctxt, token)
 
     reservation, newReservationReponse = performNewReservation(ctxt, t_reservation(user[User.Login]), token)
 
@@ -90,7 +96,7 @@ def test_201_reservation_whenNewRequestReservationOnSameSlotButDifferentDay_then
 
 @TestCase(__name__)
 def test_200_reservation_whenThreeNewReservationAcceptedAndRequestGetAllReservation_thenGetAllReservationForUser(ctxt : TestCaseContext):
-    
+
     user = performUserRegistration(ctxt)
     token = performLogin(ctxt, user)
 
@@ -99,11 +105,11 @@ def test_200_reservation_whenThreeNewReservationAcceptedAndRequestGetAllReservat
     _, secondNewReservationReponse = performNewReservation(ctxt, reservation, token)
     reservation[Reservation.ReservationDate] = "21-06-2023"
     _, thirdNewReservationReponse = performNewReservation(ctxt, reservation, token)
-    
+
     getAllReservations : requests.Response = requests.get(
         url=ctxt.URL + consts.PATH.GET_ALL_RESERVATION, 
         headers=header.AUTHORIZATION(token))
-    
+
     Assert.EXPECT_EQUAL(getAllReservations.status_code, 200, getAllReservations.content.decode())
 
     expectedArr = [json.loads(firstReservationReponse.content.decode()),

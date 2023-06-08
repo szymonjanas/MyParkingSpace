@@ -7,6 +7,7 @@ from services import ConnectionTest, AdmissionControl, SpaceReservation
 import config
 from utils import SupportedArgs, ArgvDeserializer, ApplicationConfig
 import utils
+import EmailSender
 
 class Application:
     ipAddress = None
@@ -17,10 +18,18 @@ class Application:
         
         self.LOG.info('Hello world!')
 
+        self.setTestMode(appConfig.testMode)
+
         self.initDatabase(
             appConfig.databasePath,
             appConfig.newDatabase,
             appConfig.databaseType)
+
+        self.initEmailSender(
+            appConfig.emailConfig,
+            appConfig.emailAddress,
+            appConfig.emailPassword
+        )
 
         self.setIpAddress(appConfig.ipAddress)
         self.setPort(appConfig.port)
@@ -30,6 +39,9 @@ class Application:
     def __del__(self):
         if self.database:
             self.database.disconnect()
+
+    def setTestMode(self, testMode):
+        config.TEST_MODE = bool(testMode)
 
     def setLoggingConfig(self, logsFilePath, logLevel):
         if not logsFilePath:
@@ -78,6 +90,14 @@ class Application:
         self.database.connect(databasePath) # TODO add database path option from argv
         Database.init_database_connector(self.database)
 
+    def initEmailSender(self, emailConfig, emailaddress, password):
+        if emailConfig:
+            emailaddress = config.getFromConfig("email", "address")
+            password = config.getFromConfig("email", "password")
+
+        EmailSender.init_email_sender(
+            address=emailaddress, password=password)
+
     def setIpAddress(self, ipAddress : str = None):
         self.ipAddress = ipAddress
         if not self.ipAddress:
@@ -122,7 +142,11 @@ if __name__ == "__main__":
             logLevel = utils.convertLogLevel(
                             args.GetArg(SupportedArgs.loglevel)),
             newDatabase =   args.GetArg(SupportedArgs.newdatabase),
-            databasetype =  args.GetArg(SupportedArgs.databasetype)
+            databasetype =  args.GetArg(SupportedArgs.databasetype),
+            emailAddress =  args.GetArg(SupportedArgs.emailaddress),
+            emailPassword = args.GetArg(SupportedArgs.emailpassword),
+            emailConfig =   args.GetArg(SupportedArgs.emailconfig),
+            testMode =      args.GetArg(SupportedArgs.testmode)
         )
     )
     app.runServer()

@@ -20,13 +20,13 @@ class ParkingSlot(Model):
         self.PositionY = PositionY
 
     @staticmethod
-    def deserialize(array):
+    def deserialize(item):
         return ParkingSlot(
-            array[0],
-            array[1],
-            array[2],
-            array[3],
-            array[4]
+            item[0],
+            item[1],
+            item[2],
+            item[3],
+            item[4]
         )
 
     @staticmethod

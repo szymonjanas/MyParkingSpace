@@ -22,16 +22,16 @@ class Reservation(Model):
         self.ReservationMadeDateTime = ReservationMadeDateTime
 
     @staticmethod
-    def deserialize(array : list):
+    def deserialize(array : list, func = lambda item : item):
         output = []
         for item in array:
             output.append(
-                Reservation(
-                    item[0],
-                    item[1],
-                    item[2],
-                    item[3],
-                    item[4]
-                ).__dict__
+                func(Reservation(
+                        item[0],
+                        item[1],
+                        item[2],
+                        item[3],
+                        item[4])
+                )
             )
         return output

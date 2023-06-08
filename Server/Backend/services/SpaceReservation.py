@@ -12,6 +12,7 @@ from services.common import isSessionValid
 import random
 import string
 from QrCodeGenerator import QrCodeGenerator
+from EmailSender import EmailSender, EmailSenderException
 
 api_spaceReservation = Blueprint("Space Reservation", __name__)
 
@@ -144,6 +145,11 @@ def new_reservation():
         .insert(reservation) \
         .execute(db.connector)
 
+    try: # TODO in database should be another field to write time and date when email was sent
+        EmailSender(reservation.Login, reservation.ReservationId, requestId).execute() 
+    except EmailSenderException:
+        pass
+
     message = json.dumps(reservation.__dict__)
     return Response(response=message, status=201, mimetype='application/json')
 
@@ -162,7 +168,7 @@ def get_all_reservation():
                                     .get()) \
                         .execute(db.connector)
 
-    dictAllReservations = Reservation.deserialize(dbAllReservations)
+    dictAllReservations = Reservation.deserialize(dbAllReservations, lambda item : item.__dict__)
 
     message = json.dumps(dictAllReservations)
     return Response(message, 200, content_type='application/json')

@@ -20,4 +20,4 @@ jobs:
       - name: Run tests
         run: |
           cd Server
-          python BackendSystemTests --os ci-linux --loglevel DEBUG --newdatabase
+          python BackendSystemTests --os ci-linux --loglevel DEBUG --newdatabase --testmode --emailaddress ${{ secrets.TESTEMAIL }} --emailpassword ${{ secrets.TESTEMAILPASSWORD }}
