@@ -17,6 +17,10 @@
 --loglevel <DEBUG/INFO/ERROR>
 --databasepath <path>
 --newdatabase
+--emailaddress <address>
+--emailpassword <password>
+--emailconfig (get email setting from config.json)
+--testmode (turn on TEST_MODE)
 ```
 
 ### Supported BackendSystemTests flags
@@ -25,4 +29,7 @@
 --testcase <testcase simple regex>
 --loglevel <DEBUG/INFO/ERROR>
 --os <linux/windows/ci-linux>
+--emailconfig (get email settings from config.json)
+--emailaddress <email>
+--emailpassword <password>
 ```
