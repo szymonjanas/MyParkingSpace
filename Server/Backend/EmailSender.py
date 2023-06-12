@@ -34,7 +34,7 @@ class EmailSender:
         self.message = None
         self.qrcodeBytes = None
 
-    def __initDataFromDatabase__(self):
+    def __initUserFromDatabase__(self):
         dbUser = db.SqlSelectQuery(db.SqlTableName.USERS) \
                     .select(['*']) \
                     .where(db.SqlWhere().addCondition({User.Login: self.login}).get()) \
@@ -46,6 +46,9 @@ class EmailSender:
             raise EmailSenderException(reason)
 
         self.user = User.deserialize(dbUser)[0]
+
+    def __initDataFromDatabase__(self):
+        self.__initUserFromDatabase__()
 
         dbReservation = db.SqlSelectQuery(db.SqlTableName.RESERVATIONS) \
                             .select(["*"]) \
@@ -77,7 +80,9 @@ class EmailSender:
     def __generateQrCode__(self):
         self.qrcodeBytes = QrCodeGenerator().generateBytes(text = self.reservation.ReservationId)
 
-    def __prepareMessage__(self):
+    def buildNewReservationMessage(self):
+        self.__initDataFromDatabase__()
+        self.__generateQrCode__()
         self.message = MIMEMultipart()
         self.message['From'] = str(__sender__.Email)
         self.message['To'] = ', '.join(self.getEmailRecipient())
@@ -101,6 +106,24 @@ class EmailSender:
         emailBody += "<br/><small><em>This reservation has been made on {}. If you did not do that, please check your account!</em></small><br/>".format(self.reservation.ReservationMadeDateTime)
         emailBody += self.getTestInfo()
         self.message.attach(MIMEText(emailBody, "html"))
+        return self
+
+    def buildDeleteReservationMessage(self):
+        self.__initUserFromDatabase__()
+        self.message = MIMEMultipart()
+        self.message['From'] = str(__sender__.Email)
+        self.message['To'] = ', '.join(self.getEmailRecipient())
+        self.message['Subject'] = '{} MyParkingSpace, Deleted Reservation: {}'.format(self.getTestTag(), self.reservationId)
+
+        emailBody = "Hi <b>{}</b>,<br/>".format(str(self.user.Name.split(" ")[0]))
+        emailBody += "Your parking space reservation was DELETED in MyParkingSpace!<br/>"
+        emailBody += "-------------------------<br/>"
+        emailBody += "Your deleted reservation details:<br/>"
+        emailBody += "Access code: <b>{}</b><br/>".format(self.reservationId)
+        emailBody += "Kind regards,<br/><b>MyParkingSpace</b><br/>"
+        emailBody += self.getTestInfo()
+        self.message.attach(MIMEText(emailBody, "html"))
+        return self
 
     def getTestTag(self):
         if config.TEST_MODE:
@@ -128,12 +151,11 @@ class EmailSender:
             reason = "Sender is not configured! Email will not be send!"
             LOG.warn("Sending email attempt at [{}] aborted: {}".format(self.requestId, reason))
             raise EmailSenderException(reason)
-
-        self.__initDataFromDatabase__()
-        self.__generateQrCode__()
-        self.__prepareMessage__()
-       
-        with smtplib.SMTP('smtp.gmail.com', 587) as server:
-            server.starttls()
-            server.login(__sender__.Email, __sender__.Password)
-            server.sendmail(__sender__.Email, self.getEmailRecipient(), self.message.as_string()) # FIXME change recipient as user.Email
+        
+        try: 
+            with smtplib.SMTP('smtp.gmail.com', 587) as server:
+                server.starttls()
+                server.login(__sender__.Email, __sender__.Password)
+                server.sendmail(__sender__.Email, self.getEmailRecipient(), self.message.as_string()) # FIXME change recipient as user.Email
+        except Exception as exp:
+            LOG.warn("Sending email attempt at [{}] aborted: {}".format(self.requestId, exp))

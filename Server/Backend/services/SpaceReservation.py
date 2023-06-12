@@ -123,6 +123,16 @@ def new_reservation():
         LOG.debug("New reservation attempt [{}] aborted: {}".format(requestId, reason))
         abort(401, reason)
 
+    dbParkingSlot = db.SqlSelectQuery(db.SqlTableName.PARKINGSLOTS) \
+                            .select(["*"]) \
+                            .where(db.SqlWhere().addCondition({ParkingSlot.ParkingSlotId: reservation.ParkingSlotId}).get()) \
+                            .execute(db.connector)
+
+    if not len(dbParkingSlot):
+        reason =  "Parking Slot not found with ParkingSlotId: {}".format(reservation.ParkingSlotId)
+        LOG.warn("Sending email attempt at [{}] aborted: {}".format(requestId, reason))
+        abort(401, reason)
+
     isReserved = db.SqlSelectQuery(db.SqlTableName.RESERVATIONS) \
                     .select((Reservation.ParkingSlotId, Reservation.ReservationDate)) \
                     .where(db.SqlWhere() \
@@ -146,9 +156,11 @@ def new_reservation():
         .execute(db.connector)
 
     try: # TODO in database should be another field to write time and date when email was sent
-        EmailSender(reservation.Login, reservation.ReservationId, requestId).execute() 
+        EmailSender(reservation.Login, reservation.ReservationId, requestId).buildNewReservationMessage().execute() 
     except EmailSenderException:
         pass
+    
+    LOG.debug("New reservation attempt [{}] done with: {}".format(requestId, reservation.__dict__))
 
     message = json.dumps(reservation.__dict__)
     return Response(response=message, status=201, mimetype='application/json')
@@ -199,6 +211,11 @@ def delete_reservation(ReservationId):
                     .addCondition({Reservation.ReservationId: ReservationId}) \
                     .get()) \
         .execute(db.connector)
+
+    try:
+        EmailSender(login, ReservationId, requestId).buildDeleteReservationMessage().execute() 
+    except EmailSenderException:
+        pass
 
     message = {"message": "Reservation deleted!"}
     return Response(message, 201, content_type='application/json')

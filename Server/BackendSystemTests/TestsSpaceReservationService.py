@@ -44,6 +44,8 @@ def test_201_reservation_whenUserLoginAndNewRequestReservation_thenCreateReserva
     
     user = performUserRegistration(ctxt)
     token = performLogin(ctxt, user)
+    performAddNewParkingSlots(ctxt, token)
+
     reservation, newReservationReponse = performNewReservation(ctxt, t_reservation(user[User.Login]), token)
 
     Assert.EXPECT_EQUAL(newReservationReponse.status_code, 201, newReservationReponse.content.decode())
@@ -57,6 +59,7 @@ def test_409_reservation_whenNewRequestReservationOnSlotWhichIsTaken(ctxt : Test
     
     user = performUserRegistration(ctxt)
     token = performLogin(ctxt, user)
+    performAddNewParkingSlots(ctxt, token)
 
     reservation, newReservationReponse = performNewReservation(ctxt, t_reservation(user[User.Login]), token)
 
@@ -75,6 +78,7 @@ def test_201_reservation_whenNewRequestReservationOnSameSlotButDifferentDay_then
 
     user = performUserRegistration(ctxt)
     token = performLogin(ctxt, user)
+    performAddNewParkingSlots(ctxt, token)
 
     performAddNewParkingSlots(ctxt, token)
 
@@ -99,6 +103,7 @@ def test_200_reservation_whenThreeNewReservationAcceptedAndRequestGetAllReservat
 
     user = performUserRegistration(ctxt)
     token = performLogin(ctxt, user)
+    performAddNewParkingSlots(ctxt, token)
 
     reservation, firstReservationReponse = performNewReservation(ctxt, t_reservation(user[User.Login]), token)
     reservation[Reservation.ReservationDate] = "20-06-2023"
@@ -126,6 +131,7 @@ def test_201_reservation_whenThreeNewReservationAcceptedAndRequestDeleteReservat
     
     user = performUserRegistration(ctxt)
     token = performLogin(ctxt, user)
+    performAddNewParkingSlots(ctxt, token)
 
     # 3 new reservations
     reservation, firstReservationReponse = performNewReservation(ctxt, t_reservation(user[User.Login]), token)
@@ -168,10 +174,11 @@ def test_201_reservation_whenThreeNewReservationAcceptedAndRequestDeleteReservat
         fixture=list(expectedArr[1].keys()))
 
 @TestCase(__name__)
-def test_200_reservation_qr_code_whenCreatedReservationAndRequestQrCode_thenResponseWithQrCodePng(ctxt : TestCaseContext):
+def test_200_reservation_qrcode_whenCreatedReservationAndRequestQrCode_thenResponseWithQrCodePng(ctxt : TestCaseContext):
     
     user = performUserRegistration(ctxt)
     token = performLogin(ctxt, user)
+    performAddNewParkingSlots(ctxt, token)
 
     reservation, newReservationReponse = performNewReservation(ctxt, t_reservation(user[User.Login]), token)
 
