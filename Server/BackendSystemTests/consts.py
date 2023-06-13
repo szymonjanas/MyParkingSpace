@@ -1,11 +1,13 @@
 
 class PATH:
-    REGISTER = "register"
-    LOGIN = "login"
-    LOGOUT = "logout"
+    API = "api/"
+    REGISTER = API + "register"
+    LOGIN = API + "login"
+    LOGOUT = API + "logout"
     PARKING_SLOTS = "parking/slots"
-    NEW_PARKING_SLOTS = PARKING_SLOTS + "/new"
-    NEW_RESERVATION = "reservation/new"
-    GET_ALL_RESERVATION = "reservation/all"
-    DELETE_RESERVATION = "reservation/"
-    QR_CODE_RESERVATION = "reservation/qr/"
+    NEW_PARKING_SLOTS = API + PARKING_SLOTS + "/new"
+    RESERVATION = API + "reservation/"
+    NEW_RESERVATION =  RESERVATION
+    GET_ALL_RESERVATION =  RESERVATION
+    DELETE_RESERVATION =  RESERVATION
+    QR_CODE_RESERVATION =  RESERVATION + "qr/"

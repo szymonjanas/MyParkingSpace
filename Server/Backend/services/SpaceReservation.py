@@ -28,7 +28,7 @@ def nextReservationId(reservationIdList : list):
         reservationId = __generateLetters__()
     return reservationId
 
-@api_spaceReservation.route("/parking/slots/new", methods = ['POST'])
+@api_spaceReservation.route("/api/parking/slots/new", methods = ['POST'])
 @Authentication
 def new_parking_slots():
     # FIXME parking slots initiation should belongs to administrator token only!
@@ -78,7 +78,7 @@ def new_parking_slots():
     LOG.debug("New parking slots attempt [{}] finished successful!".format(requestId))
     return Response(status=201, mimetype='application/json')
 
-@api_spaceReservation.route("/parking/slots", methods = ['GET'])
+@api_spaceReservation.route("/api/parking/slots", methods = ['GET'])
 @Authentication
 def parking_slots():
     requestId = utils.nextRequestId("slots_")
@@ -90,7 +90,7 @@ def parking_slots():
     message = json.dumps({'slots': slots })
     return Response(response=message, status=200, mimetype='application/json')
 
-@api_spaceReservation.route("/reservation/new", methods = ['POST'])
+@api_spaceReservation.route("/api/reservation", methods = ['POST'])
 @Authentication
 def new_reservation():
     requestId = utils.nextRequestId("new_reservation_")
@@ -166,7 +166,7 @@ def new_reservation():
     return Response(response=message, status=201, mimetype='application/json')
 
 
-@api_spaceReservation.route("/reservation/all", methods = ['GET'])
+@api_spaceReservation.route("/api/reservation", methods = ['GET'])
 @Authentication
 def get_all_reservation():
     requestId = utils.nextRequestId("get_all_reservations")
@@ -186,7 +186,7 @@ def get_all_reservation():
     return Response(message, 200, content_type='application/json')
 # check if return empty list
 
-@api_spaceReservation.route("/reservation/<ReservationId>", methods = ['DELETE'])
+@api_spaceReservation.route("/api/reservation/<ReservationId>", methods = ['DELETE'])
 @Authentication
 def delete_reservation(ReservationId):
     requestId = utils.nextRequestId("new_reservation_")
@@ -220,7 +220,7 @@ def delete_reservation(ReservationId):
     message = {"message": "Reservation deleted!"}
     return Response(message, 201, content_type='application/json')
 
-@api_spaceReservation.route("/reservation/qr/<ReservationId>", methods = ['GET'])
+@api_spaceReservation.route("/api/reservation/qr/<ReservationId>", methods = ['GET'])
 @Authentication
 def qr_code_for_reservation(ReservationId):
     requestId = utils.nextRequestId("qr_reservation_")

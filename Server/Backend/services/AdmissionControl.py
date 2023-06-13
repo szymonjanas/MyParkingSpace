@@ -12,7 +12,7 @@ api_admissionControlService = Blueprint("Admission Control Service", __name__)
 
 LOG = logging.getLogger(__name__)
 
-@api_admissionControlService.route("/register", methods = ['POST'])
+@api_admissionControlService.route("/api/register", methods = ['POST'])
 def register():
 
     registerData = request.json
@@ -84,7 +84,7 @@ def register():
     response = Response(json.dumps(message), status=201, mimetype='application/json')
     return response
 
-@api_admissionControlService.route("/login", methods = ['POST'])
+@api_admissionControlService.route("/api/login", methods = ['POST'])
 def login():
     loginData = request.json
     requestId = nextRequestId("login_")
@@ -104,11 +104,16 @@ def login():
         abort(400, reason)
 
     loginParam = loginData[User.Login]
-    dbRows = db.SqlSelectQuery(db.SqlTableName.USERS) \
-                    .select((User.Login, User.Password)) \
-                    .where(db.SqlWhere() \
-                            .addCondition({User.Login: loginParam}).get()) \
-                    .execute(db.connector)
+    try:
+        dbRows = db.SqlSelectQuery(db.SqlTableName.USERS) \
+                        .select((User.Login, User.Password)) \
+                        .where(db.SqlWhere() \
+                                .addCondition({User.Login: loginParam}).get()) \
+                        .execute(db.connector)
+    except Exception as ex:
+        LOG.error("Login [{}] aborted: {}".format(requestId, ex))
+        abort(400, ex)
+
     if (len(dbRows) == 0):
         reason = "User with login {} is not registered!".format(loginParam)
         LOG.info("Login [{}] aborted: {}".format(requestId, reason))
@@ -126,7 +131,7 @@ def login():
     response = Response(json.dumps(message), status=201, mimetype='application/json')
     return response
     
-@api_admissionControlService.route("/logout", methods = ['POST'])
+@api_admissionControlService.route("/api/logout", methods = ['POST'])
 def logout():
     requestId = nextRequestId("logout_")
 

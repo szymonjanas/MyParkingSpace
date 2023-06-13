@@ -1,13 +1,15 @@
 import sys
+import os
 import logging
 import DatabaseConnector as dbService
 import Database
-from flask import Flask
-from services import ConnectionTest, AdmissionControl, SpaceReservation
+from flask import Flask, send_from_directory
+from services import ConnectionTest, AdmissionControl, SpaceReservation, ReactConnector
 import config
 from utils import SupportedArgs, ArgvDeserializer, ApplicationConfig
 import utils
 import EmailSender
+from flask_cors import CORS
 
 class Application:
     ipAddress = None
@@ -109,10 +111,12 @@ class Application:
             self.port = config.PORT
 
     def initServer(self):
-        self.flaskServer = Flask(config.SERVER_NAME)
+        self.flaskServer = Flask(config.SERVER_NAME, static_folder='../frontend/build')
+        CORS(self.flaskServer)
         self.flaskServer.register_blueprint(ConnectionTest.api_connectionTestService)
         self.flaskServer.register_blueprint(AdmissionControl.api_admissionControlService)
         self.flaskServer.register_blueprint(SpaceReservation.api_spaceReservation)
+        self.flaskServer.register_blueprint(ReactConnector.api_reactConnector)
 
     def runServer(self):
         if not self.ipAddress or not self.port:
