@@ -1,5 +1,4 @@
 import sys
-import os
 import logging
 import DatabaseConnector as dbService
 import Database

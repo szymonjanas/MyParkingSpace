@@ -7,7 +7,7 @@ def test_whenServerIsRunningPathHelloWorld_thenShouldReturnHelloWorldString(cont
 
     Assert.EXPECT_EQUAL(
         "Hello World!",
-        requests.get(context.URL + "helloworld").text,
+        requests.get(context.URL + "api/helloworld").text,
         "For connection validation string value must be the same!"
     )
 
@@ -16,6 +16,6 @@ def test_whenServerIsRunningPathHelloWorld_thenShouldReturnHelloWorldStringOnSec
 
     Assert.EXPECT_EQUAL(
         "Hello World!",
-        requests.get(context.URL + "helloworld").text,
+        requests.get(context.URL + "api/helloworld").text,
         "For connection validation string value must be the same!"
     )

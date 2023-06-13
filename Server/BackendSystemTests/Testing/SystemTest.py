@@ -53,7 +53,7 @@ class TestCaseContext:
 
     def isServerOnline(self):
         try:
-            return "Hello World!" == requests.get(self.URL + "helloworld").text
+            return "Hello World!" == requests.get(self.URL + "api/helloworld").text
         except ConnectionError:
             return False
         except requests.exceptions.ConnectionError:
