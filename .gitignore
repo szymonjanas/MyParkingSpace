@@ -6,3 +6,4 @@ Server/logs/*.jpeg
 Server/logs/*.png
 venv/
 Server.egg-info/
+frontend/build

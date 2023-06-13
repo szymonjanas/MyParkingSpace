@@ -3,6 +3,7 @@ import { createTheme, CssBaseline, ThemeProvider } from '@mui/material';
 import { Logger } from './Logger';
 import { Routes, Route } from 'react-router-dom';
 import { PrivateRoute } from './PrivateRoute';
+import { Login } from './Login';
 
 const theme = createTheme({
   palette: {
@@ -16,7 +17,7 @@ function App() {
       <CssBaseline />
       <Logger />
       <Routes>
-        {/* <Route path="login" element={<Login />} /> */}
+        <Route path="/login" element={<Login />} />
         <Route path="/" element={
           <PrivateRoute>
             {/* <Navbar /> */}

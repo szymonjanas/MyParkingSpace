@@ -3,26 +3,26 @@ import { getItemOrDefault, removeItem, setItem } from './Storage';
 
 const PROFILE = {
     username: "",
-    jwt: ""
+    token: ""
 }
 
 export function useProfile() {
     const [userProfile, setUserProfile] = React.useState(() => getItemOrDefault("userProfile", PROFILE));
 
-    function login(jwt, username) {
+    function login(token, username) {
         if (Boolean(username) === false &&
-            Boolean(jwt) === false) {
+            Boolean(token) === false) {
             removeItem("userProfile");
         } else {
             setUserProfile({
                 username: username,
-                jwt: jwt
+                token: token
             })
         }
     }
 
     function isLogin() {
-        return Boolean(userProfile.username) && Boolean(userProfile.jwt);
+        return Boolean(userProfile.username) && Boolean(userProfile.token);
     }
 
     function logout() {
