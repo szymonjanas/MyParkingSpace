@@ -1,7 +1,7 @@
 **/__pycache__
 **.log
 **.sqlite
-**.json
+Server/**.json
 Server/logs/*.jpeg
 Server/logs/*.png
 venv/

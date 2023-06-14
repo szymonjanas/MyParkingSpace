@@ -1,0 +1,18 @@
+name: Build React Frontend
+on: push
+jobs:
+  build_react:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v3
+    - uses: actions/setup-node@v3
+    - name: Install react application
+      run: |
+        cd frontend
+        npm install
+
+    - name: Build react application
+      run: |
+        cd frontend
+        npm run build
