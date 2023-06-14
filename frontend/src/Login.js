@@ -1,8 +1,9 @@
 import * as React from 'react';
+import { useState } from 'react';
 import { Avatar, Button, Grid, IconButton, InputAdornment, Paper, TextField } from "@mui/material";
 import LockIcon from '@mui/icons-material/Lock';
 import { Login as LoginIcon, Visibility, VisibilityOff } from '@mui/icons-material';
-import { sendRequestForLoginToServer } from './requests'
+import { sendRequestForLoginToServer, sendRequestForRegisterToServer } from './requests'
 import { Navigate } from 'react-router';
 import { useProfile } from './database/UserProfile';
 
@@ -30,18 +31,44 @@ export function Login() {
         passwordRef: React.useRef('')
     }
 
+    const registerFormData = {
+        emailRef: React.useRef(''),
+        nameRef: React.useRef('')
+    }
+
     const executeLoginRequest = () => {
-        var login = authFormData.loginRef.current.value;
-        var password = authFormData.passwordRef.current.value;
-        sendRequestForLoginToServer({ login, password })
-            .then((token) => {
-                if (token && login) {
-                    login(token, login);
-                }
-            });
+        var loginValue = authFormData.loginRef.current.value;
+        var passwordValue = authFormData.passwordRef.current.value;
+        if (registration)
+        {
+            var emailValue = registerFormData.emailRef.current.value;
+            var nameValue = registerFormData.nameRef.current.value;
+
+            sendRequestForRegisterToServer(
+                loginValue, passwordValue, emailValue, nameValue)
+                .then((output) => {
+                    if (output)
+                        changeRegistrationForm(false)
+                })
+
+        }
+        else
+        {
+            sendRequestForLoginToServer(loginValue, passwordValue)
+                .then((token) => {
+                    if (token && loginValue) {
+                        login(token, loginValue);
+                    }
+                });
+        }
     };
 
+    const changeRegistrationForm = () => {
+        setRegistration(!registration);
+    }
+
     const [passwordVisible, setPasswordVisibility] = React.useState(false);
+    const [registration, setRegistration] = useState(false);
 
     const togglePasswordVisiblity = () => setPasswordVisibility(!passwordVisible);
 
@@ -60,8 +87,34 @@ export function Login() {
                         <Paper elevation={10} style={paperStyle}>
                             <Grid align='center'>
                                 <Avatar><LockIcon /></Avatar>
-                                <h2>Sign in</h2>
+                                <h2>{ registration ? "Sing up" : "Sign in" }</h2>
                             </Grid>
+                            { 
+                                registration ? 
+                                <>
+                                    <TextField
+                                        id='standard-basic'
+                                        inputRef={ registration ? registerFormData.nameRef :  authFormData.nameRef}
+                                        label='name'
+                                        variant='standard'
+                                        fullWidth
+                                        required
+                                        autoFocus
+                                        autoComplete='true'
+                                    />
+                                    <TextField
+                                        id='standard-basic'
+                                        inputRef={ registration ? registerFormData.emailRef : authFormData.emailRef}
+                                        label='email'
+                                        variant='standard'
+                                        fullWidth
+                                        required
+                                        autoFocus
+                                        autoComplete='true'
+                                    />
+                                </> :
+                                <></>
+                            }
                             <TextField
                                 id='standard-basic'
                                 inputRef={authFormData.loginRef}
@@ -92,7 +145,7 @@ export function Login() {
                                         </InputAdornment>
                                     )
                                 }}
-                                onKeyPress={onEnterKeyPressInPasswordField}
+                                onKeyDown={onEnterKeyPressInPasswordField}
                             />
                             <Button
                                 type='submit'
@@ -101,8 +154,14 @@ export function Login() {
                                 style={btnStyle}
                                 fullWidth
                                 onClick={executeLoginRequest}>
-                                Login
+                                { registration ? "Register" : "Login" } 
                                 <LoginIcon style={{ marginLeft: '1vh' }} />
+                            </Button>
+                            <Button
+                                onClick={changeRegistrationForm}
+                                fullWidth
+                                style={{marginTop : "3vh"}}>
+                                { registration ? "Go to login" : "Go to registration" }
                             </Button>
                         </Paper>
                     </Grid>
