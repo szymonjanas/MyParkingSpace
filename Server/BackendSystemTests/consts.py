@@ -1,6 +1,7 @@
 
 class PATH:
     API = "api/"
+    HELLO_WORLD = API + "helloworld"
     REGISTER = API + "register"
     LOGIN = API + "login"
     LOGOUT = API + "logout"

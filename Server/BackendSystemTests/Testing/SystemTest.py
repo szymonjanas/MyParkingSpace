@@ -7,6 +7,7 @@ import requests
 import psutil
 import Testing.SystemTestConsts as consts
 import Testing.SystemTestContext as context
+import consts as route
 
 systemTestContext : context.SystemTestContext = None
 
@@ -51,19 +52,20 @@ class TestCaseContext:
     def getTestOutcome(self):
         return self.testOutcome
 
-    def isServerOnline(self):
-        try:
-            return "Hello World!" == requests.get(self.URL + "api/helloworld").text
-        except ConnectionError:
-            return False
-        except requests.exceptions.ConnectionError:
-            return False
 
     def __turn_off_requests_logging__(self):
         logging.getLogger("urllib3").propagate = False
 
     def __turn_on_requests__logging__(self):
         logging.getLogger("urllib3").propagate = True
+
+    def isServerOnline(self):
+        try:
+            return "Hello World!" == requests.get(self.URL + route.PATH.HELLO_WORLD).text
+        except ConnectionError:
+            return False
+        except requests.exceptions.ConnectionError:
+            return False
 
     def connectToBackend(self):
         self.__turn_off_requests_logging__()
