@@ -1,7 +1,8 @@
 import uuid
 import utils
 import logging
-from flask import abort, request
+from flask import request
+from abort import abort
 
 LOG = logging.getLogger(__name__)
 
