@@ -95,10 +95,9 @@ class TestCaseContext:
              ]
 
         if bool(systemTestContext.emailAddress) and bool(systemTestContext.emailPassword):
-            cmd.append("--emailaddress")
-            cmd.append(systemTestContext.emailAddress)
-            cmd.append("--emailpassword")
-            cmd.append(systemTestContext.emailPassword)
+            cmd += ["--emailaddress", systemTestContext.emailAddress, 
+                    "--emailpassword", systemTestContext.emailPassword]
+
         elif systemTestContext.emailConfig:
             cmd.append("--emailconfig")
 
