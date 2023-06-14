@@ -115,7 +115,7 @@ def new_reservation():
 
     isUser = db.SqlSelectQuery(db.SqlTableName.USERS) \
                 .select([User.Login]) \
-                .where(db.SqlWhere().addCondition({User.Login: reservation.Login}).get()) \
+                .where(db.SqlWhere().And({User.Login: reservation.Login}).get()) \
                 .execute(db.connector)
     
     if not len(isUser):
@@ -125,7 +125,7 @@ def new_reservation():
 
     dbParkingSlot = db.SqlSelectQuery(db.SqlTableName.PARKINGSLOTS) \
                             .select(["*"]) \
-                            .where(db.SqlWhere().addCondition({ParkingSlot.ParkingSlotId: reservation.ParkingSlotId}).get()) \
+                            .where(db.SqlWhere().And({ParkingSlot.ParkingSlotId: reservation.ParkingSlotId}).get()) \
                             .execute(db.connector)
 
     if not len(dbParkingSlot):
@@ -136,7 +136,7 @@ def new_reservation():
     isReserved = db.SqlSelectQuery(db.SqlTableName.RESERVATIONS) \
                     .select((Reservation.ParkingSlotId, Reservation.ReservationDate)) \
                     .where(db.SqlWhere() \
-                                .addCondition({ Reservation.ReservationDate: reservation.ReservationDate }).get()) \
+                                .And({ Reservation.ReservationDate: reservation.ReservationDate }).get()) \
                     .execute(db.connector)
 
     if len(isReserved):
@@ -176,7 +176,7 @@ def get_all_reservation():
     dbAllReservations = db.SqlSelectQuery(db.SqlTableName.RESERVATIONS) \
                         .select(['*']) \
                         .where(db.SqlWhere() \
-                                    .addCondition({Reservation.Login: login}) \
+                                    .And({Reservation.Login: login}) \
                                     .get()) \
                         .execute(db.connector)
 
@@ -196,7 +196,7 @@ def delete_reservation(ReservationId):
     dbAllReservations = db.SqlSelectQuery(db.SqlTableName.RESERVATIONS) \
                         .select(['*']) \
                         .where(db.SqlWhere() \
-                                    .addCondition({Reservation.ReservationId: ReservationId}) \
+                                    .And({Reservation.ReservationId: ReservationId}) \
                                     .get()) \
                         .execute(db.connector)
 
@@ -208,7 +208,7 @@ def delete_reservation(ReservationId):
     db.SqlDeleteQuery(db.SqlTableName.RESERVATIONS) \
         .delete() \
         .where(db.SqlWhere() \
-                    .addCondition({Reservation.ReservationId: ReservationId}) \
+                    .And({Reservation.ReservationId: ReservationId}) \
                     .get()) \
         .execute(db.connector)
 
@@ -230,7 +230,7 @@ def qr_code_for_reservation(ReservationId):
     dbAllReservations = db.SqlSelectQuery(db.SqlTableName.RESERVATIONS) \
                         .select(['*']) \
                         .where(db.SqlWhere() \
-                                    .addCondition({Reservation.ReservationId: ReservationId}) \
+                                    .And({Reservation.ReservationId: ReservationId}) \
                                     .get()) \
                         .execute(db.connector)
 

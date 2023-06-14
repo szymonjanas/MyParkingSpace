@@ -38,8 +38,8 @@ def register():
     dbRows = db.SqlSelectQuery(db.SqlTableName.USERS) \
                 .select((User.Login, User.Email)) \
                 .where(db.SqlWhere() \
-                    .addCondition({User.Login: registerData[User.Login]}) \
-                    .addCondition({User.Email: registerData[User.Email]}, db.SqlConditionConcatenator.OR) \
+                    .And({User.Login: registerData[User.Login]}) \
+                    .Or({User.Email: registerData[User.Email]}) \
                     .get()) \
                 .execute(db.connector)
     
@@ -108,7 +108,7 @@ def login():
         dbRows = db.SqlSelectQuery(db.SqlTableName.USERS) \
                         .select((User.Login, User.Password)) \
                         .where(db.SqlWhere() \
-                                .addCondition({User.Login: loginParam}).get()) \
+                                .And({User.Login: loginParam}).get()) \
                         .execute(db.connector)
     except Exception as ex:
         LOG.error("Login [{}] aborted: {}".format(requestId, ex))

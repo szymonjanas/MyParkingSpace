@@ -37,7 +37,7 @@ class EmailSender:
     def __initUserFromDatabase__(self):
         dbUser = db.SqlSelectQuery(db.SqlTableName.USERS) \
                     .select(['*']) \
-                    .where(db.SqlWhere().addCondition({User.Login: self.login}).get()) \
+                    .where(db.SqlWhere().And({User.Login: self.login}).get()) \
                     .execute(db.connector)
 
         if not len(dbUser):
@@ -52,10 +52,9 @@ class EmailSender:
 
         dbReservation = db.SqlSelectQuery(db.SqlTableName.RESERVATIONS) \
                             .select(["*"]) \
-                            .where(db.SqlWhere().addCondition(
+                            .where(db.SqlWhere().And(
                                 {Reservation.Login: self.login, 
-                                 Reservation.ReservationId: self.reservationId}, 
-                                 db.SqlConditionConcatenator.AND).get()) \
+                                 Reservation.ReservationId: self.reservationId}).get()) \
                             .execute(db.connector)
 
         if not len(dbReservation):
@@ -67,7 +66,7 @@ class EmailSender:
 
         dbParkingSlot = db.SqlSelectQuery(db.SqlTableName.PARKINGSLOTS) \
                             .select(["*"]) \
-                            .where(db.SqlWhere().addCondition({ParkingSlot.ParkingSlotId: self.reservation.ParkingSlotId}).get()) \
+                            .where(db.SqlWhere().And({ParkingSlot.ParkingSlotId: self.reservation.ParkingSlotId}).get()) \
                             .execute(db.connector)
 
         if not len(dbParkingSlot):

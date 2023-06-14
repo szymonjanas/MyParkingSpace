@@ -38,6 +38,14 @@ class SqlWhere:
             self.conditionList.append("{}='{}'".format(key, value))
         return self
 
+    def And(self, condition : dict):
+        self.addCondition(condition, SqlConditionConcatenator.AND)
+        return self
+
+    def Or(self, condition : dict):
+        self.addCondition(condition, SqlConditionConcatenator.OR)
+        return self
+
     def get(self) -> SqlWhereCondition:
         return SqlWhereCondition(' '.join(self.conditionList))
 
