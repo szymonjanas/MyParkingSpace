@@ -101,3 +101,32 @@ export async function sendRequestForLogoutToServer(token) {
             }
         });
 }
+
+export async function sendRequestForParkingSlotsByDateToServer(token, date) {
+
+    return await requestToServer('/api/parking/slots/' + date,
+        {
+            headers: {
+                'Content-Type': 'application/json',
+                'Accept': 'application/json',
+                'Access-Control-Allow-Origin': '*',
+                'Access-Control-Allow-Headers': 'Origin, X-Requested-With, Content-Type, Accept',
+                'Authorization': "token " + token,
+            },
+            mode: 'no-cors',
+            method: 'POST',
+            redirect: 'follow'
+        }
+    )
+        .then(function (response) {
+            return response.json();
+        })
+        .then(function (myJson) {
+            if (myJson["error"]) {
+                logMessage("error", myJson["error"]);
+            }
+            else {
+                return myJson["slots"]
+            }
+        });
+}
