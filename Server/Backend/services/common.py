@@ -1,6 +1,7 @@
 import authentication
 import re
 from models.users import User
+import datetime 
 
 def retreiveAuthorizationToken(LOG, requestId, headers):
     if "Authorization" in headers:
@@ -100,3 +101,10 @@ def validateParameters(params : dict, abortWith, fixture : list ):
             isLoginValid, loginMsg = validateLogin(params)
             if not isLoginValid:
                 return abortWith(loginMsg)
+
+def validateDate(date_string):
+    try:
+        datetime.strptime(date_string,"%d.%m.%Y")
+        return True
+    except ValueError:
+        return False

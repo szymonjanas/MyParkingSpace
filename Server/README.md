@@ -70,6 +70,26 @@ Output **json**: `201 OK`
 ]
 ```
 
+### `GET /api/parking/slots/<date>`
+Input **header**:
+```json
+"Authorization: token <token value>"
+```
+Output **json**: `201 OK`
+```json
+"date" : "dd.MM.yyyy",
+"slots" : [
+    {
+        "ParkingSlotId" : "text",
+        "SlotNumber" : "text",
+        "Floor" : "text",
+        "PositionX" : "text",
+        "PositionY" : "text",
+        "isFree" : "true/false"
+    }
+]
+```
+
 ### `POST /api/reservation/new`
 Input **header**:
 ```json

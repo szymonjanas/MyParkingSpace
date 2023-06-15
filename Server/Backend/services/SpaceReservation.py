@@ -9,7 +9,7 @@ from models.reservation import Reservation
 from models.users import User
 import utils
 from authentication import Authentication
-from services.common import isSessionValid
+from services.common import isSessionValid, validateDate
 import random
 import string
 from QrCodeGenerator import QrCodeGenerator
@@ -89,6 +89,38 @@ def parking_slots():
     slots = utils.objectsToJson(ParkingSlot.deserialiaze_many(serializedSlots))
 
     message = json.dumps({'slots': slots })
+    return Response(response=message, status=200, mimetype='application/json')
+
+@api_spaceReservation.route("/api/parking/slots/<date>", methods = ['GET']) # FIXME NOT TESTED IN SYSTEM TEST
+@Authentication
+def parking_slots_by_date(date):
+    requestId = utils.nextRequestId("dateslots_")
+    serializedSlots = db.SqlSelectQuery(db.SqlTableName.PARKINGSLOTS) \
+                            .select(('*')) \
+                            .execute(db.connector)
+    LOG.info("New parking slots by date attempt [{}] with date: {}".format(requestId, date))
+    slots = utils.objectsToJson(ParkingSlot.deserialiaze_many(serializedSlots))
+
+    if validateDate(date):
+        reason = "Date do not match format dd-mm-yyyy!"
+        LOG.info("New parking slots by date attempt [{}] aborted: {}".format(requestId, reason))
+        abort(400, reason)
+
+    reservations = db.SqlSelectQuery(db.SqlTableName.RESERVATIONS) \
+                        .select(tuple(Reservation.ParkingSlotId)) \
+                        .where(db.SqlWhere.And({Reservation.ReservationDate: date})) \
+                        .execute(db.connector)
+    
+    for slot in slots:
+        if slot.ParkingSlotId in reservations.ParkingSlotId:
+            slot["isFree"] = False
+        else:
+            slot["isFree"] = True
+
+    message = json.dumps({
+        'date' : date,
+        'slots': slots 
+    })
     return Response(response=message, status=200, mimetype='application/json')
 
 @api_spaceReservation.route("/api/reservation/new", methods = ['POST'])
