@@ -87,7 +87,9 @@ export function Login() {
                         <Paper elevation={10} style={paperStyle}>
                             <Grid align='center'>
                                 <h2><GarageOutlined fontSize="large" style={{verticalAlign: "middle"}} /> MyParkingSpace</h2>
-                                <h3><Avatar><LockIcon /></Avatar> { registration ? "Sing up" : "Sign in" }</h3>
+                                <hr />
+                                <h3 style={{marginTop: "5vh"}}><Avatar><LockIcon /></Avatar> { registration ? "Sing up" : "Sign in" }</h3>
+                                
                             </Grid>
                             { 
                                 registration ? 
@@ -151,16 +153,16 @@ export function Login() {
                                 type='submit'
                                 color='primary'
                                 variant="contained"
-                                style={btnStyle}
+                                style={{...btnStyle, marginBottom: "5vh" }}
                                 fullWidth
                                 onClick={executeLoginRequest}>
                                 { registration ? "Register" : "Login" } 
-                                <LoginIcon style={{ marginLeft: '1vh' }} />
+                                <LoginIcon style={{ marginLeft: '1vh'}} />
                             </Button>
+                            <hr />
                             <Button
                                 onClick={changeRegistrationForm}
-                                fullWidth
-                                style={{marginTop : "3vh"}}>
+                                fullWidth>
                                 { registration ? "Go to login" : "Go to registration" }
                             </Button>
                         </Paper>
