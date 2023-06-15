@@ -4,6 +4,8 @@ import { Logger } from './Logger';
 import { Routes, Route } from 'react-router-dom';
 import { PrivateRoute } from './PrivateRoute';
 import { Login } from './Login';
+import { Navbar } from './Navbar'
+import { Home } from './Home';
 
 const theme = createTheme({
   palette: {
@@ -20,10 +22,10 @@ function App() {
         <Route path="/login" element={<Login />} />
         <Route path="/" element={
           <PrivateRoute>
-            {/* <Navbar /> */}
+            <Navbar />
           </PrivateRoute>
         }>
-          {/* <Route index path="/" element={<Home />} /> */}
+          <Route index path="/" element={<Home />} />
         </Route>
       </Routes>
     </ThemeProvider>
