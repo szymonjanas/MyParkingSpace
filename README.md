@@ -6,9 +6,12 @@ Project will likely be abandon as soon as we receive a grade.
 
 [![Backend System Tests](https://github.com/szymonjanas/MyParkingSpace/actions/workflows/backend-system-tests.yml/badge.svg)](https://github.com/szymonjanas/MyParkingSpace/actions/workflows/backend-system-tests.yml)
 [![Build React Frontend](https://github.com/szymonjanas/MyParkingSpace/actions/workflows/frontend-build.yml/badge.svg)](https://github.com/szymonjanas/MyParkingSpace/actions/workflows/frontend-build.yml)
+
+---
+
 Scope:
 - Backend: python3 + flask
-- Frontend: react
+- Frontend: react + MUI
 - Database: SQLite3
 - CI/CD: github actions
 
