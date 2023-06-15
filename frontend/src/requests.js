@@ -70,3 +70,34 @@ export async function sendRequestForRegisterToServer(login, password, email, nam
             }
         });
 }
+
+export async function sendRequestForLogoutToServer(token) {
+
+    return await requestToServer('/api/logout',
+        {
+            headers: {
+                'Content-Type': 'application/json',
+                'Accept': 'application/json',
+                'Access-Control-Allow-Origin': '*',
+                'Access-Control-Allow-Headers': 'Origin, X-Requested-With, Content-Type, Accept',
+                'Authorization': "token " + token,
+            },
+            mode: 'no-cors',
+            method: 'POST',
+            redirect: 'follow'
+        }
+    )
+        .then(function (response) {
+            return response.json();
+        })
+        .then(function (myJson) {
+            if (myJson["error"]) {
+                logMessage("error", myJson["error"]);
+                return false;
+            }
+            else {
+                logMessage("success", "Logout user!");
+                return true;
+            }
+        });
+}
