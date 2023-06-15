@@ -1,11 +1,10 @@
 import * as React from 'react';
 import { AppBar, Button, Container, Dialog, DialogTitle, Link, Toolbar, Typography } from "@mui/material";
-import { AccountCircle, Logout } from '@mui/icons-material';
+import { AccountCircle, Logout, GarageOutlined } from '@mui/icons-material';
 import { Box } from '@mui/system';
 import { useScreenSize } from './screenSize';
 import { useProfile } from './database/UserProfile';
 import { ConfirmLogoutAlert } from './ConfirmLogoutAlert';
-
 
 export function Topbar() {
 
@@ -43,6 +42,7 @@ export function Topbar() {
                                 justifyContent: 'center'
                             }}
                         >
+                            <GarageOutlined sx={{ mr: '2pt' }} />
                             <Typography
                                 variant="h6"
                                 noWrap
