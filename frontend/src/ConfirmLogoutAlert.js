@@ -12,13 +12,9 @@ export function ConfirmLogoutAlert(props) {
   };
 
   const handleLogout = () => {
-    sendRequestForLogoutToServer(userProfile.token)
-      .then((output) => {
-          if (output) {
-            logout();
-            handleClose();
-          }
-      })
+    sendRequestForLogoutToServer(userProfile.token);
+    logout();
+    handleClose();
   };
 
   return (
