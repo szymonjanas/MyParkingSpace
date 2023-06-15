@@ -2,7 +2,7 @@ import * as React from 'react';
 import { useState } from 'react';
 import { Avatar, Button, Grid, IconButton, InputAdornment, Paper, TextField } from "@mui/material";
 import LockIcon from '@mui/icons-material/Lock';
-import { Login as LoginIcon, Visibility, VisibilityOff } from '@mui/icons-material';
+import { Login as LoginIcon, Visibility, VisibilityOff, GarageOutlined } from '@mui/icons-material';
 import { sendRequestForLoginToServer, sendRequestForRegisterToServer } from './requests'
 import { Navigate } from 'react-router';
 import { useProfile } from './database/UserProfile';
@@ -86,8 +86,8 @@ export function Login() {
                     <Grid>
                         <Paper elevation={10} style={paperStyle}>
                             <Grid align='center'>
-                                <Avatar><LockIcon /></Avatar>
-                                <h2>{ registration ? "Sing up" : "Sign in" }</h2>
+                                <h2><GarageOutlined fontSize="large" style={{verticalAlign: "middle"}} /> MyParkingSpace</h2>
+                                <h3><Avatar><LockIcon /></Avatar> { registration ? "Sing up" : "Sign in" }</h3>
                             </Grid>
                             { 
                                 registration ? 
