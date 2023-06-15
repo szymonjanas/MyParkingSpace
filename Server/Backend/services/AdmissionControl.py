@@ -6,7 +6,7 @@ import datetime
 import Database as db
 from models.users import User
 import authentication as auth
-from services.common import retreiveAuthorizationToken
+from services.common import retreiveAuthorizationToken, validateParameters
 from utils import toTuple, nextRequestId
 
 api_admissionControlService = Blueprint("Admission Control Service", __name__)
@@ -20,22 +20,13 @@ def register():
     requestId = nextRequestId("reg_")
     registerData = dict(registerData)
     LOG.info("Registration attempt [{}] with data: {}".format(requestId, request.json))
-    if not (User.Login in registerData.keys() and 
-            User.Password in registerData.keys() and 
-            User.Email in registerData.keys() and
-            User.Name in registerData.keys()):
-        reason = "At least one registration parameter is invalid!"
+    
+    def abortWith(reason):
         LOG.warn("Registration [{}] aborted: {}".format(requestId, reason))
         abort(400, reason)
 
-    if (len(registerData[User.Login]) == 0 or
-        len(registerData[User.Password]) == 0 or 
-        len(registerData[User.Email]) == 0 or
-        len(registerData[User.Name]) == 0):
-        reason = "At least one registration parameter is empty!"
-        LOG.warn("Registration [{}] aborted: {}".format(requestId, reason))
-        abort(400, reason)
-
+    validateParameters(registerData, abortWith, [User.Login, User.Password, User.Email, User.Name])
+    
     dbRows = db.SqlSelectQuery(db.SqlTableName.USERS) \
                 .select((User.Login, User.Email)) \
                 .where(db.SqlWhere() \
@@ -92,17 +83,12 @@ def login():
     LOG.info("Login attempt [{}] with data: {}".format(requestId, loginData))
 
     loginData = dict(loginData)
-    if not (User.Login in loginData.keys() and 
-            User.Password in loginData.keys()):
-        reason = "At least one login parameter is invalid!"
+
+    def abortWith(reason):
         LOG.warn("Login [{}] aborted: {}".format(requestId, reason))
         abort(400, reason)
 
-    if (len(loginData[User.Login]) == 0 or
-        len(loginData[User.Password]) == 0):
-        reason = "At least one login parameter is empty!"
-        LOG.warn("Login [{}] aborted: {}".format(requestId, reason))
-        abort(400, reason)
+    validateParameters(loginData, abortWith, [User.Login, User.Password])
 
     loginParam = loginData[User.Login]
     try:

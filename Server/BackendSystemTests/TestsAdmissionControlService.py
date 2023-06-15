@@ -18,7 +18,7 @@ def test_400_register_whenRequestContainIncorrectData(ctxt : TestCaseContext):
     registerResp : requests.Response = requests.post(ctxt.URL + consts.PATH.REGISTER, json=userPayload)
 
     Assert.EXPECT_EQUAL(registerResp.status_code, 400, registerResp.content.decode())
-    Assert.EXPECT_PHRASE_IN_STRING("At least one registration parameter is invalid!", registerResp.content.decode())
+    Assert.EXPECT_PHRASE_IN_STRING("Login does not exist in request!", registerResp.content.decode())
 
 @TestCase(__name__)
 def test_400_register_whenRequestContainDataWithAtLeastOneEmptyParameter(ctxt : TestCaseContext):
@@ -28,7 +28,7 @@ def test_400_register_whenRequestContainDataWithAtLeastOneEmptyParameter(ctxt : 
     registerResp : requests.Response = requests.post(ctxt.URL + consts.PATH.REGISTER, json=userPayload)
 
     Assert.EXPECT_EQUAL(registerResp.status_code, 400)
-    Assert.EXPECT_PHRASE_IN_STRING("At least one registration parameter is empty!", registerResp.content.decode())
+    Assert.EXPECT_PHRASE_IN_STRING("Login is empty!", registerResp.content.decode())
 
 @TestCase(__name__)
 def test_400_register_whenRequestLoginIsAlreadyRegistered(ctxt : TestCaseContext):
@@ -81,7 +81,7 @@ def test_400_login_whenRequestLoginMissingParam(ctxt : TestCaseContext):
 
     loginResponse : requests.Response = requests.post(ctxt.URL + consts.PATH.LOGIN, json=userPayload)
     Assert.EXPECT_EQUAL(loginResponse.status_code, 400, loginResponse.content.decode())
-    Assert.EXPECT_PHRASE_IN_STRING('At least one login parameter is invalid!'.format(user[User.Login]), loginResponse.content.decode())
+    Assert.EXPECT_PHRASE_IN_STRING("Login does not exist in request!", loginResponse.content.decode())
 
 @TestCase(__name__)
 def test_400_login_whenRequestLoginHasAtLeastOneEmptyParam(ctxt : TestCaseContext):
@@ -94,7 +94,7 @@ def test_400_login_whenRequestLoginHasAtLeastOneEmptyParam(ctxt : TestCaseContex
 
     loginResponse : requests.Response = requests.post(ctxt.URL + consts.PATH.LOGIN, json=userPayload)
     Assert.EXPECT_EQUAL(loginResponse.status_code, 400, loginResponse.content.decode())
-    Assert.EXPECT_PHRASE_IN_STRING('At least one login parameter is empty!'.format(user[User.Login]), loginResponse.content.decode())
+    Assert.EXPECT_PHRASE_IN_STRING("Password is empty!", loginResponse.content.decode())
 
 @TestCase(__name__)
 def test_400_login_whenRequestLoginAndUserIsRegisteredButLoginIsIncorrect(ctxt : TestCaseContext):
