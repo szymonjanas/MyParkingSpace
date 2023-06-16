@@ -136,6 +136,9 @@ class EmailSender:
 
     def getEmailRecipient(self):
         global __sender__
+        if __sender__ == None:
+            return [""]
+
         if config.TEST_MODE:
             return [__sender__.Email]
         else:

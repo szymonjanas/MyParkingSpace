@@ -199,7 +199,9 @@ def new_reservation():
         EmailSender(reservation.Login, reservation.ReservationId, requestId).buildNewReservationMessage().execute() 
     except EmailSenderException:
         pass
-    
+    except Exception as ex:
+        LOG.error("[{requestId}] {ex}")
+
     LOG.debug("New reservation attempt [{}] done with: {}".format(requestId, reservation.__dict__))
 
     message = json.dumps(reservation.__dict__)
@@ -256,6 +258,8 @@ def delete_reservation(ReservationId):
         EmailSender(login, ReservationId, requestId).buildDeleteReservationMessage().execute() 
     except EmailSenderException:
         pass
+    except Exception as ex:
+        LOG.error("[{requestId}] {ex}")
 
     message = {"message": "Reservation deleted!"}
     return Response(message, 201, content_type='application/json')
