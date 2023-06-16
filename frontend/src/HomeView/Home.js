@@ -51,7 +51,6 @@ export function Home() {
     })
 
     if (reservationIdx === -1) {
-      logMessage("error", "Reservation not found!")
       return null
     }
 
@@ -130,7 +129,9 @@ export function Home() {
 
     return (
       <div>
-        <h1>My Calendar</h1>
+        <Typography variant="h6">
+          Change date:
+        </Typography>
         <DatePicker dateFormat="dd.MM.yyyy" selected={selectedDate} onChange={handleDateChange} />
       </div>
     );
@@ -191,8 +192,8 @@ export function Home() {
           PaperProps={{
             className: "gradient-border",
             style: {
-              height: "40vh",
-              width: "40vh",
+              height: "50vh",
+              width: "50vh",
               borderRadius: "70vh",
               borderStyle: "solid",
               borderWidth: "medium",
@@ -211,6 +212,7 @@ export function Home() {
             <Typography>
               New reservation
             </Typography>
+            <hr />
           </DialogTitle>
           <Typography variant="subtitle1">
             Parking space number: <b>{currentSlot === null ? "" : currentSlot.ParkingSlotId}</b>
@@ -273,8 +275,8 @@ export function Home() {
           PaperProps={{
             className: "gradient-border",
             style: {
-              height: "40vh",
-              width: "40vh",
+              height: "50vh",
+              width: "50vh",
               borderRadius: "70vh",
               borderStyle: "solid",
               borderWidth: "medium",
@@ -293,7 +295,14 @@ export function Home() {
             <Typography>
               Reservation details
             </Typography>
+            <hr />
           </DialogTitle>
+          <Typography variant="h5">
+            Reservation code
+          </Typography>
+          <Typography variant="h4">
+            <b>{getReservationId()}</b>
+          </Typography>
           <Typography variant="subtitle1">
             <b> slot number: {currentSlot === null ? "" : currentSlot.ParkingSlotId},</b>
           </Typography>
@@ -305,12 +314,6 @@ export function Home() {
           </Typography>
           <Typography variant="subtitle1">
             Reservation date: <b>{selectedDate === null ? "" : formatDate(selectedDate)}</b>
-          </Typography>
-          <Typography variant="h5">
-            Reservation code
-          </Typography>
-          <Typography variant="h4">
-            <b>{getReservationId()}</b>
           </Typography>
           <Button
             onClick={performDeleteReservation}
@@ -425,24 +428,32 @@ export function Home() {
         <Typography align="center">
           Welcome <b>{userProfile.username}</b> in MyParkingSpace!
         </Typography>
+        <hr style={{ width: '50%', margin: '0 auto', marginTop: "2vh", marginBottom: "2vh" }} />
         <div style={CENTER_STYLE}>
           <Button
             variant="contained"
             onClick={changeReservationCardView}
-            endIcon={showAllReservations ? <Today /> : <CalendarMonth />}>
+            endIcon={showAllReservations ? <Today /> : <CalendarMonth />}
+            style={{ marginTop: "2vh", marginBottom: "2vh" }}>
             {showAllReservations ? "Show today reservation" : "Show all reservations"}
           </Button>
         </div>
         <div style={CENTER_STYLE}>
-          <MyReservations />
-        </div>
-        <div style={CENTER_STYLE}>
-          <Calendar />
-        </div>
-        <div style={CENTER_STYLE}>
-          <ParkingSlots />
-        </div>
-      </ContentBox>
+        <Typography variant='h6'>
+          {showAllReservations ? "All reservations:" : "Today reservation:"}
+        </Typography>
+      </div>
+      <div style={CENTER_STYLE}>
+        <MyReservations />
+      </div>
+      <hr style={{ width: '50%', margin: '0 auto', marginTop: "2vh", marginBottom: "2vh" }} />
+      <div style={CENTER_STYLE}>
+        <Calendar />
+      </div>
+      <div style={CENTER_STYLE}>
+        <ParkingSlots />
+      </div>
+    </ContentBox >
       <NewReservationForm />
       <ShowReservationForm />
     </>
