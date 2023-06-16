@@ -85,7 +85,7 @@ Output **json**: `201 OK`
         "Floor" : "text",
         "PositionX" : "text",
         "PositionY" : "text",
-        "isFree" : "true/false"
+        "isFree" : "free/taken/mine"
     }
 ]
 ```

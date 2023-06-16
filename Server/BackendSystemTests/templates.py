@@ -45,7 +45,7 @@ def t_reservation(login):
         ReservationId=None,
         ParkingSlotId="0-12",
         Login=login,
-        ReservationDate="12-06-2023",
+        ReservationDate="12.06.2023",
         ReservationMadeDateTime=None 
     ).__dict__
 

@@ -101,25 +101,32 @@ def parking_slots_by_date(date):
     LOG.info("New parking slots by date attempt [{}] with date: {}".format(requestId, date))
     slots = utils.objectsToJson(ParkingSlot.deserialiaze_many(serializedSlots))
 
-    if validateDate(date):
-        reason = "Date do not match format dd-mm-yyyy!"
+    if not validateDate(date):
+        reason = "Date do not match format dd.mm.yyyy!"
         LOG.info("New parking slots by date attempt [{}] aborted: {}".format(requestId, reason))
         abort(400, reason)
 
     reservations = db.SqlSelectQuery(db.SqlTableName.RESERVATIONS) \
-                        .select(tuple(Reservation.ParkingSlotId)) \
-                        .where(db.SqlWhere.And({Reservation.ReservationDate: date})) \
+                        .select([Reservation.ParkingSlotId]) \
+                        .where(db.SqlWhere().And({Reservation.ReservationDate: date}).get()) \
                         .execute(db.connector)
     
+    newSlots = []
+
     for slot in slots:
-        if slot.ParkingSlotId in reservations.ParkingSlotId:
-            slot["isFree"] = False
-        else:
-            slot["isFree"] = True
+        newSlot = slot
+        isFree = "free"
+        for reservation in reservations:
+            if slot[ParkingSlot.ParkingSlotId] == reservation[0]:
+                isFree = "mine"
+        if slot[ParkingSlot.SlotNumber] == '-1':
+            isFree = "taken"
+        newSlot["isFree"] = isFree
+        newSlots.append(newSlot)
 
     message = json.dumps({
         'date' : date,
-        'slots': slots 
+        'slots': newSlots 
     })
     return Response(response=message, status=200, mimetype='application/json')
 
