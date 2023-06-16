@@ -5,10 +5,13 @@ import DatePicker, { registerLocale, setDefaultLocale } from 'react-datepicker';
 import { useState } from 'react';
 import 'react-datepicker/dist/react-datepicker.css';
 import pl from 'date-fns/locale/pl';
-import { CheckCircleOutline } from '@mui/icons-material';
+import { CheckCircleOutline, DeleteForever, CalendarMonth, Today } from '@mui/icons-material';
 import { Button, Dialog, DialogTitle, Typography } from '@mui/material';
 import { GarageOutlined } from '@mui/icons-material';
 import * as request from '../requests';
+import { logMessage } from '../Logger';
+import { Card, CardContent, IconButton, } from '@mui/material';
+import { QrCode } from '@mui/icons-material';
 registerLocale('pl', pl)
 setDefaultLocale('pl')
 
@@ -23,24 +26,98 @@ export function Home() {
   const { userProfile } = useProfile();
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [myreservations, setMyReservations] = useState([]);
+  const [showAllReservations, setShowAllReservations] = useState(false);
 
   const formatDate = (date) => {
     return date.toLocaleDateString('pl-PL', { day: '2-digit', month: '2-digit', year: 'numeric' });
   };
 
-  const MyReservations = () => {
-    const getMyReservations = () => {
-      request.sendRequestForGetAllReservations(userProfile.token)
-        .then((reservations) => {
-          console.log(reservations)
-          setMyReservations(myreservations)
-        })
+  const updateMyReservations = () => {
+    request.sendRequestForGetAllReservations(userProfile.token)
+      .then((reservations) => {
+        setMyReservations(reservations)
+      })
+  }
+  React.useEffect(updateMyReservations, [])
+
+  const changeReservationCardView = () => {
+    setShowAllReservations(!showAllReservations);
+  }
+
+  const getCurrentReservationIdx = () => {
+    const reservationIdx = myreservations.findIndex((reservItem) => {
+      if (formatDate(selectedDate) === reservItem.ReservationDate)
+        return true;
+    })
+
+    if (reservationIdx === -1) {
+      logMessage("error", "Reservation not found!")
+      return null
     }
 
-    React.useEffect(getMyReservations, [])
+    return reservationIdx
+  }
+
+  const getCurrentReservation = () => {
+    const idx = getCurrentReservationIdx()
+    if (idx)
+      return myreservations[idx]
+    else
+      return null
+  }
+
+  const MyReservations = () => {
+
+    const CardTemplate = ({ item, index }) => {
+      return (
+        <>
+          {
+            item === null ?
+              <></>
+              :
+              <Card key={index} style={{ marginBottom: '1vh' }}>
+                <CardContent>
+                  <div style={{ display: 'flex', alignItems: 'center' }}>
+                    <IconButton aria-label="Generate QR Code">
+                      <QrCode color="primary" />
+                    </IconButton>
+                    <div style={{ marginRight: '2vh', marginLeft: '2vh' }}>
+                      <Typography >
+                        Reservation: <b>{item.ReservationId}</b>
+                      </Typography>
+                      <Typography >
+                        Slot: <b>{item.ParkingSlotId}</b>
+                      </Typography>
+                      <Typography>
+                        Date: <b>{item.ReservationDate}</b>
+                      </Typography>
+                      <Typography>
+                        Was made: {item.ReservationMadeDateTime} by: {item.Login}
+                      </Typography>
+                    </div>
+                    <IconButton aria-label="Delete" edge="end">
+                      <DeleteForever color="error" />
+                    </IconButton>
+                  </div>
+                </CardContent>
+              </Card>
+          }
+        </>
+      )
+    }
 
     return (
       <>
+        {
+          showAllReservations ?
+            <div style={{ margin: 'auto' }}>
+              {myreservations.map((item, index) => (
+                <CardTemplate item={item} index={index} />
+              ))}
+            </div>
+            :
+            <CardTemplate item={getCurrentReservation()} index={0} />
+        }
       </>
     )
   }
@@ -49,7 +126,6 @@ export function Home() {
   const Calendar = () => {
     const handleDateChange = (date) => {
       setSelectedDate(date);
-      console.log(formatDate(date))
     };
 
     return (
@@ -100,7 +176,10 @@ export function Home() {
         }
       }
       request.sendRequestForNewReservation(userProfile.token, reservation)
-      .then(() => updateParkingSlots());
+        .then(() => {
+          updateParkingSlots();
+          updateMyReservations();
+        });
       handleOnClose()
     }
 
@@ -129,7 +208,7 @@ export function Home() {
             color: "DodgerBlue"
           }} >
             <GarageOutlined fontSize="large" color="info" />
-            <Typography variant="subtitle1">
+            <Typography>
               New reservation
             </Typography>
           </DialogTitle>
@@ -156,8 +235,99 @@ export function Home() {
     );
   };
 
+  const [isShowReservationOpen, setShowReservationOpen] = React.useState(false);
+
+  const ShowReservationForm = () => {
+    const handleOnClose = () => {
+      setShowReservationOpen(false);
+    }
+
+    const performDeleteReservation = () => {
+
+      const ReservationId = myreservations[getCurrentReservationIdx()].ReservationId;
+      if (!ReservationId) {
+        handleOnClose()
+      }
+      request.sendRequestForDeleteReservation(userProfile.token, ReservationId)
+        .then(() => {
+          updateParkingSlots();
+          updateMyReservations();
+        });
+      handleOnClose()
+    }
+
+    const getReservationId = () => {
+      const idx = getCurrentReservationIdx();
+      if (idx) {
+        return myreservations[idx].ReservationId
+      }
+      else
+        return ""
+    }
+
+    return (
+      <>
+        <Dialog
+          open={isShowReservationOpen}
+          onClose={handleOnClose}
+          PaperProps={{
+            className: "gradient-border",
+            style: {
+              height: "40vh",
+              width: "40vh",
+              borderRadius: "70vh",
+              borderStyle: "solid",
+              borderWidth: "medium",
+              textAlign: "center"
+            },
+
+            elevation: 0
+          }}
+        >
+
+          <DialogTitle sx={{
+            textAlign: "center",
+            color: "DodgerBlue"
+          }} >
+            <GarageOutlined fontSize="large" color="info" />
+            <Typography>
+              Reservation details
+            </Typography>
+          </DialogTitle>
+          <Typography variant="subtitle1">
+            <b> slot number: {currentSlot === null ? "" : currentSlot.ParkingSlotId},</b>
+          </Typography>
+          <Typography variant="subtitle1">
+            <b>location: {currentSlot === null ? "" : currentSlot.SlotNumber},</b>
+          </Typography>
+          <Typography variant="subtitle1">
+            <b>floor: {currentSlot === null ? "" : currentSlot.Floor}</b>
+          </Typography>
+          <Typography variant="subtitle1">
+            Reservation date: <b>{selectedDate === null ? "" : formatDate(selectedDate)}</b>
+          </Typography>
+          <Typography variant="h5">
+            Reservation code
+          </Typography>
+          <Typography variant="h4">
+            <b>{getReservationId()}</b>
+          </Typography>
+          <Button
+            onClick={performDeleteReservation}
+            startIcon={<DeleteForever />}
+            color="error"
+            fullWidth
+            sx={{ paddingBottom: "4vh", marginTop: "auto" }}
+          >
+            <b>Delete reservation</b>
+          </Button>
+        </Dialog>
+      </>
+    );
+  };
+
+
   const ParkingSlots = () => {
-    console.log("Get colors for pa parking slots!")
     const getColor = (space) => {
       if (space.SlotNumber === '-1')
         return "peru"
@@ -192,15 +362,13 @@ export function Home() {
     }
 
     const setShowReservationForm = (slot) => {
-      console.log("showReservationForm")
-
+      setCurrentSlot(slot);
+      setShowReservationOpen(true);
     }
 
     const openNewReservationForm = (slot) => {
-      console.log("newReservationForm")
-      setNewReservationFormOpen(true);
       setCurrentSlot(slot);
-
+      setNewReservationFormOpen(true);
     }
 
     const onClickParkingSlotButtonAction = (slot) => {
@@ -236,8 +404,8 @@ export function Home() {
                         disabled={!deserializeIsFree(space)}
                         onClick={() => onClickParkingSlotButtonAction(space)}
                       >
-                        <div ><b>{space.SlotNumber === -1 ? <b>Entry</b> : space.ParkingSlotId}</b></div>
-                        <div ><small>{space.isFree}</small></div>
+                        <div ><b>{space.SlotNumber === '-1' ? <b>Entry</b> : space.ParkingSlotId}</b></div>
+                        <div ><small>{space.SlotNumber === '-1' ? "" : space.isFree}</small></div>
                       </Button>
                     )}
                   </td>
@@ -257,7 +425,17 @@ export function Home() {
         <Typography align="center">
           Welcome <b>{userProfile.username}</b> in MyParkingSpace!
         </Typography>
-        <MyReservations />
+        <div style={CENTER_STYLE}>
+          <Button
+            variant="contained"
+            onClick={changeReservationCardView}
+            endIcon={showAllReservations ? <Today /> : <CalendarMonth />}>
+            {showAllReservations ? "Show today reservation" : "Show all reservations"}
+          </Button>
+        </div>
+        <div style={CENTER_STYLE}>
+          <MyReservations />
+        </div>
         <div style={CENTER_STYLE}>
           <Calendar />
         </div>
@@ -266,6 +444,7 @@ export function Home() {
         </div>
       </ContentBox>
       <NewReservationForm />
+      <ShowReservationForm />
     </>
   );
 

@@ -261,7 +261,7 @@ def delete_reservation(ReservationId):
     except Exception as ex:
         LOG.error("[{requestId}] {ex}")
 
-    message = {"message": "Reservation deleted!"}
+    message = json.dumps({"message": "Reservation deleted!"})
     return Response(message, 201, content_type='application/json')
 
 @api_spaceReservation.route("/api/reservation/qr/<ReservationId>", methods = ['GET'])
