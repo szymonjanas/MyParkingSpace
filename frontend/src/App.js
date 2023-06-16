@@ -5,7 +5,7 @@ import { Routes, Route } from 'react-router-dom';
 import { PrivateRoute } from './PrivateRoute';
 import { Login } from './Login';
 import { Navbar } from './Navbar'
-import { Home } from './Home';
+import { Home } from './HomeView';
 
 const theme = createTheme({
   palette: {

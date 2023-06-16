@@ -1,6 +1,10 @@
 import { fetch as requestToServer } from 'whatwg-fetch';
 import { logMessage } from './Logger';
 
+
+///////////////////////
+// ADMISSION CONTROL //
+///////////////////////
 export async function sendRequestForLoginToServer(login, password) {
 
     return await requestToServer('/api/login',
@@ -56,7 +60,6 @@ export async function sendRequestForRegisterToServer(login, password, email, nam
         }
     )
         .then(function (response) {
-            console.log("DEBUG LOGS: ", response)
             return response.json();
         })
         .then(function (myJson) {
@@ -102,7 +105,10 @@ export async function sendRequestForLogoutToServer(token) {
         });
 }
 
-export async function sendRequestForParkingSlotsByDateToServer(token, date) {
+///////////////////////
+// SPACE RESERVATION //
+///////////////////////
+export async function sendRequestForParkingSlotsByDate(token, date) {
 
     return await requestToServer('/api/parking/slots/' + date,
         {
@@ -112,6 +118,37 @@ export async function sendRequestForParkingSlotsByDateToServer(token, date) {
                 'Access-Control-Allow-Origin': '*',
                 'Access-Control-Allow-Headers': 'Origin, X-Requested-With, Content-Type, Accept',
                 'Authorization': "token " + token,
+            },
+            mode: 'no-cors',
+            method: 'GET',
+            redirect: 'follow'
+        }
+    )
+        .then(function (response) {
+            return response.json();
+        })
+        .then(function (myJson) {
+            if (myJson["error"]) {
+                logMessage("error", myJson["error"]);
+                return { "slots" : [] }
+            }
+            else {
+                return myJson["slots"]
+            }
+        });
+}
+
+export async function sendRequestForNewReservation(token, reservation) {
+
+    return await requestToServer('/api/reservation/new',
+        {
+            body: JSON.stringify(reservation),
+            headers: {
+                'Content-Type': 'application/json',
+                'Accept': 'application/json',
+                'Access-Control-Allow-Origin': '*',
+                'Access-Control-Allow-Headers': 'Origin, X-Requested-With, Content-Type, Accept',
+                'Authorization': "token " + token
             },
             mode: 'no-cors',
             method: 'POST',
@@ -124,9 +161,152 @@ export async function sendRequestForParkingSlotsByDateToServer(token, date) {
         .then(function (myJson) {
             if (myJson["error"]) {
                 logMessage("error", myJson["error"]);
+                return false;
             }
             else {
-                return myJson["slots"]
+                logMessage("success", "New reservation created!");
+                return true;
+            }
+        });
+}
+
+export async function sendRequestForGetAllReservations(token) {
+
+    return await requestToServer('/api/reservation/all',
+        {
+            headers: {
+                'Content-Type': 'application/json',
+                'Accept': 'application/json',
+                'Access-Control-Allow-Origin': '*',
+                'Access-Control-Allow-Headers': 'Origin, X-Requested-With, Content-Type, Accept',
+                'Authorization': "token " + token
+            },
+            mode: 'no-cors',
+            method: 'GET',
+            redirect: 'follow'
+        }
+    )
+        .then(function (response) {
+            return response.json();
+        })
+        .then(function (myJson) {
+            if (myJson["error"]) {
+                logMessage("error", myJson["error"]);
+                return false;
+            }
+            else {
+                return myJson;
+            }
+        });
+}
+
+export async function sendRequestForGetAllParkingSlots(token) {
+
+    return await requestToServer('/api/parking/slots/all',
+        {
+            headers: {
+                'Content-Type': 'application/json',
+                'Accept': 'application/json',
+                'Access-Control-Allow-Origin': '*',
+                'Access-Control-Allow-Headers': 'Origin, X-Requested-With, Content-Type, Accept',
+                'Authorization': "token " + token
+            },
+            mode: 'no-cors',
+            method: 'GET',
+            redirect: 'follow'
+        }
+    )
+        .then(function (response) {
+            return response.json();
+        })
+        .then(function (myJson) {
+            if (myJson["error"]) {
+                logMessage("error", myJson["error"]);
+                return false;
+            }
+            else {
+                return myJson;
+            }
+        });
+}
+
+export async function sendRequestForDeleteReservation(token, reservationId) {
+
+    return await requestToServer('/api/reservation/'+ reservationId,
+        {
+            headers: {
+                'Content-Type': 'application/json',
+                'Accept': 'application/json',
+                'Access-Control-Allow-Origin': '*',
+                'Access-Control-Allow-Headers': 'Origin, X-Requested-With, Content-Type, Accept',
+                'Authorization': "token " + token
+            },
+            mode: 'no-cors',
+            method: 'DELETE',
+            redirect: 'follow'
+        }
+    )
+        .then(function (response) {
+            return response.json();
+        })
+        .then(function (myJson) {
+            if (myJson["error"]) {
+                logMessage("error", myJson["error"]);
+                return false;
+            }
+            else {
+                logMessage("success", "Reservation deleted!");
+                return true;
+            }
+        });
+}
+
+// TODO prodcess image
+
+// fetch('your-api-endpoint', {
+//     headers: {
+//       Accept: 'image/png',
+//     },
+//   })
+//     .then(response => response.blob())
+//     .then(blob => {
+//       // Process the received blob (PNG image)
+//     })
+//     .catch(error => {
+//       // Handle any errors that occur during the request
+//     });
+
+//     const imageUrl = URL.createObjectURL(blob);
+
+// // Render the image in an <img> tag
+// return <img src={imageUrl} alt="PNG Image" />;
+export async function sendRequestForGetReservationQrCode(token, reservationId) {
+
+    return await requestToServer('/api/reservation/'+ reservationId,
+        {
+            headers: {
+                'Content-Type': 'application/json',
+                'Accept': 'application/json',
+                'Access-Control-Allow-Origin': '*',
+                'Access-Control-Allow-Headers': 'Origin, X-Requested-With, Content-Type, Accept',
+                'Authorization': "token " + token
+            },
+            mode: 'no-cors',
+            method: 'DELETE',
+            redirect: 'follow'
+        }
+    )
+        .then(function (response) {
+            return response.json();
+        })
+        .then(function (myJson) {
+            if (myJson["error"]) {
+                logMessage("error", myJson["error"]);
+                return false;
+            }
+            else {
+                logMessage("success", "Reservation deleted!");
+                return true;
             }
         });
 }
