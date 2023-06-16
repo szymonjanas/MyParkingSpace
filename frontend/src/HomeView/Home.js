@@ -1,13 +1,13 @@
 import * as React from 'react';
 import { ContentBox } from '../ContextBox';
 import { useProfile } from '../database/UserProfile';
-import { Typography } from '@mui/material';
 import DatePicker, { registerLocale, setDefaultLocale } from 'react-datepicker';
-import Button from '@mui/material/Button';
 import { useState } from 'react';
 import 'react-datepicker/dist/react-datepicker.css';
 import pl from 'date-fns/locale/pl';
-import { DUMMY_PARKING_SLOTS } from "../DummyParkingSlots"
+import { CheckCircleOutline } from '@mui/icons-material';
+import { Button, Dialog, DialogTitle, Typography } from '@mui/material';
+import { GarageOutlined } from '@mui/icons-material';
 import * as request from '../requests';
 registerLocale('pl', pl)
 setDefaultLocale('pl')
@@ -83,6 +83,79 @@ export function Home() {
   }
   React.useEffect(updateParkingSlots, [myreservations, selectedDate])
 
+  const [isNewReservationFormOpen, setNewReservationFormOpen] = React.useState(false);
+  const [currentSlot, setCurrentSlot] = React.useState(null);
+
+  const NewReservationForm = () => {
+    const handleOnClose = () => {
+      setNewReservationFormOpen(false);
+    }
+
+    const performReservation = () => {
+      const reservation = {
+        "reservation": {
+          "ParkingSlotId": currentSlot === null ? "" : currentSlot.ParkingSlotId,
+          "Login": userProfile === null ? "" : userProfile.username,
+          "ReservationDate": selectedDate === null ? "" : formatDate(selectedDate)
+        }
+      }
+      request.sendRequestForNewReservation(userProfile.token, reservation)
+      .then(() => updateParkingSlots());
+      handleOnClose()
+    }
+
+    return (
+      <>
+        <Dialog
+          open={isNewReservationFormOpen}
+          onClose={handleOnClose}
+          PaperProps={{
+            className: "gradient-border",
+            style: {
+              height: "40vh",
+              width: "40vh",
+              borderRadius: "70vh",
+              borderStyle: "solid",
+              borderWidth: "medium",
+              textAlign: "center"
+            },
+
+            elevation: 0
+          }}
+        >
+
+          <DialogTitle sx={{
+            textAlign: "center",
+            color: "DodgerBlue"
+          }} >
+            <GarageOutlined fontSize="large" color="info" />
+            <Typography variant="subtitle1">
+              New reservation
+            </Typography>
+          </DialogTitle>
+          <Typography variant="subtitle1">
+            Parking space number: <b>{currentSlot === null ? "" : currentSlot.ParkingSlotId}</b>
+          </Typography>
+          <Typography variant="subtitle1">
+            Parking space location: <b>{currentSlot === null ? "" : currentSlot.SlotNumber}</b>
+          </Typography>
+          <Typography variant="subtitle1">
+            Parking space floor: <b>{currentSlot === null ? "" : currentSlot.Floor}</b>
+          </Typography>
+          <Button
+            onClick={performReservation}
+            startIcon={<CheckCircleOutline />}
+            color="success"
+            fullWidth
+            sx={{ paddingBottom: "4vh", marginTop: "auto" }}
+          >
+            <b>Reserve</b>
+          </Button>
+        </Dialog>
+      </>
+    );
+  };
+
   const ParkingSlots = () => {
     console.log("Get colors for pa parking slots!")
     const getColor = (space) => {
@@ -98,8 +171,7 @@ export function Home() {
 
     }
 
-    const isParkingSpaceMineAtCurrentDate = () =>
-    {
+    const isParkingSpaceMineAtCurrentDate = () => {
       return parkingslots2D.some((xItem) => xItem.some((yItem) => {
         if (yItem !== null)
           if (yItem.isFree === 'mine')
@@ -112,30 +184,32 @@ export function Home() {
         return true
       if (isParkingSpaceMineAtCurrentDate())
         return false
-        
+
       else if (space.isFree === "free")
         return true
       else
         return false
     }
 
-    const showReservationForm = (slot) => {
+    const setShowReservationForm = (slot) => {
       console.log("showReservationForm")
 
     }
 
-    const newReservationForm = (slot) => {
+    const openNewReservationForm = (slot) => {
       console.log("newReservationForm")
+      setNewReservationFormOpen(true);
+      setCurrentSlot(slot);
+
     }
 
-    const onClickParkingSlotButtonAction = (slot) => 
-    {
+    const onClickParkingSlotButtonAction = (slot) => {
       if (isParkingSpaceMineAtCurrentDate())
         if (slot.isFree === "mine") {
-          return showReservationForm(slot)
+          return setShowReservationForm(slot)
         }
       if (slot.isFree === "free") {
-        return newReservationForm(slot)
+        return openNewReservationForm(slot)
       }
     }
 
@@ -191,6 +265,7 @@ export function Home() {
           <ParkingSlots />
         </div>
       </ContentBox>
+      <NewReservationForm />
     </>
   );
 
