@@ -18,9 +18,7 @@ export function Topbar() {
     const closelogoutAlert = () => setConfirmLogoutAlertStatus(false);
 
     const handleOpenUsernameForMobileDialog = () => {
-        if (isMobile()) {
-            setUsernameForMobileDialog(true);
-        }
+        setUsernameForMobileDialog(true);
     }
 
     const handleCloseUsernameForMobileDialog = () => {

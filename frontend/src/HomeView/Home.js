@@ -119,6 +119,17 @@ export function Home() {
     );
   };
 
+  const triggerDeleteReservation = (ReservationId) => {
+    const deleteReservation = () => {
+      request.sendRequestForDeleteReservation(userProfile.token, ReservationId)
+      .then(() => {
+        updateParkingSlots();
+        updateMyReservations();
+      });
+    }
+    triggerConfAlert("Delete", "Delete reservation: " + ReservationId, deleteReservation)
+  }
+
   const MyReservations = () => {
     const CardTemplate = ({ item, index }) => {
       return (
@@ -149,7 +160,9 @@ export function Home() {
                       </Typography>
                     </div>
                     <IconButton aria-label="Delete" edge="end">
-                      <DeleteForever color="error" />
+                      <DeleteForever 
+                        onClick={() => triggerDeleteReservation(item.ReservationId)}
+                        color="error" />
                     </IconButton>
                   </div>
                 </CardContent>
@@ -317,16 +330,7 @@ export function Home() {
         handleOnClose()
       }
       
-      
-      const deleteReservation = () => {
-        request.sendRequestForDeleteReservation(userProfile.token, ReservationId)
-        .then(() => {
-          updateParkingSlots();
-          updateMyReservations();
-        });
-      }
-      triggerConfAlert("Delete", "Delete reservation: " + ReservationId, deleteReservation)
-      
+      triggerDeleteReservation(ReservationId)
       handleOnClose()
     }
 
