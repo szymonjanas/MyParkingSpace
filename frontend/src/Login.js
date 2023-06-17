@@ -3,7 +3,7 @@ import { useState } from 'react';
 import { Avatar, Button, Grid, IconButton, InputAdornment, Paper, TextField } from "@mui/material";
 import LockIcon from '@mui/icons-material/Lock';
 import { Login as LoginIcon, Visibility, VisibilityOff, GarageOutlined } from '@mui/icons-material';
-import { sendRequestForLoginToServer, sendRequestForRegisterToServer } from './requests'
+import { sendRequestForLoginToServer, sendRequestForRegisterToServer, sendRequestForUserInfo } from './requests'
 import { Navigate } from 'react-router';
 import { useProfile } from './database/UserProfile';
 
@@ -24,7 +24,7 @@ export function Login() {
     }
 
     // ---------- AUTH FORM ----------
-    const { isLogin, login } = useProfile();
+    const { userProfile, isLogin, login, setUserDetails } = useProfile();
 
     const authFormData = {
         loginRef: React.useRef(''),

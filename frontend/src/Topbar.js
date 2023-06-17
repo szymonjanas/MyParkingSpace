@@ -1,15 +1,13 @@
 import * as React from 'react';
-import { AppBar, Button, Container, Dialog, DialogTitle, Link, Toolbar, Typography } from "@mui/material";
+import { AppBar, Button, Container, Dialog, DialogContent, DialogTitle, Link, Toolbar, Typography } from "@mui/material";
 import { AccountCircle, Logout, GarageOutlined } from '@mui/icons-material';
 import { Box } from '@mui/system';
-import { useScreenSize } from './screenSize';
 import { useProfile } from './database/UserProfile';
 import { ConfirmLogoutAlert } from './ConfirmLogoutAlert';
 
 export function Topbar() {
 
-    const { isMobile } = useScreenSize();
-    const { userProfile } = useProfile();
+    const { userProfile, userDetails } = useProfile();
 
     const [isUsernameForMobileDialogOpen, setUsernameForMobileDialog] = React.useState(false);
 
@@ -84,7 +82,24 @@ export function Topbar() {
                 onClose={handleCloseUsernameForMobileDialog}
                 open={isUsernameForMobileDialogOpen}
             >
-                <DialogTitle>{userProfile.username}</DialogTitle>
+                <DialogContent>
+                    <Typography variant="h6">
+                        <b>User profile details</b>
+                    </Typography>
+                    <hr />
+                    <Typography>
+                        Login: <b>{userDetails.Login}</b>
+                    </Typography>
+                    <Typography>
+                        Email: <b>{userDetails.Email}</b>
+                    </Typography>
+                    <Typography>
+                        Name: <b>{userDetails.Name}</b>
+                    </Typography>
+                    <Typography>
+                        Registered: <b>{userDetails.RegistrationDate}</b>
+                    </Typography>
+                </DialogContent>
             </Dialog>
 
             <ConfirmLogoutAlert

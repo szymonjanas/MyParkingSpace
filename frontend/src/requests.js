@@ -261,25 +261,6 @@ export async function sendRequestForDeleteReservation(token, reservationId) {
         });
 }
 
-// TODO prodcess image
-
-// fetch('your-api-endpoint', {
-//     headers: {
-//       Accept: 'image/png',
-//     },
-//   })
-//     .then(response => response.blob())
-//     .then(blob => {
-//       // Process the received blob (PNG image)
-//     })
-//     .catch(error => {
-//       // Handle any errors that occur during the request
-//     });
-
-//     const imageUrl = URL.createObjectURL(blob);
-
-// // Render the image in an <img> tag
-// return <img src={imageUrl} alt="PNG Image" />;
 export async function sendRequestForGetReservationQrCode(token, reservationId) {
 
     return await requestToServer('/api/reservation/qr/'+ reservationId,
@@ -297,4 +278,33 @@ export async function sendRequestForGetReservationQrCode(token, reservationId) {
         }
     )
         .then(response => response.blob());
+}
+
+export async function sendRequestForUserInfo(token) {
+
+    return await requestToServer('/api/user',
+        {
+            headers: {
+                'Content-Type': 'application/json',
+                'Accept': 'application/json',
+                'Access-Control-Allow-Origin': '*',
+                'Access-Control-Allow-Headers': 'Origin, X-Requested-With, Content-Type, Accept',
+                'Authorization': "token " + token
+            },
+            mode: 'no-cors',
+            method: 'GET',
+            redirect: 'follow'
+        }
+    )
+        .then(function (response) {
+            return response.json();
+        })
+        .then(function (myJson) {
+            if (myJson["error"]) {
+                logMessage("error", myJson["error"]);
+            }
+            else {
+                return myJson["user"];
+            }
+        });
 }

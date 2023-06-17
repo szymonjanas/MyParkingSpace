@@ -28,14 +28,14 @@ export function Home() {
   const [showAllReservations, setShowAllReservations] = useState(false);
 
   const [openConfAlert, setConfAlert] = React.useState(false);
-  const [onConfAlertAcceptCallback, setConfAlertOnAcceptCallback] = React.useState(() => {return () => {}});
+  const [onConfAlertAcceptCallback, setConfAlertOnAcceptCallback] = React.useState(() => { return () => { } });
   const [confAlertAcceptText, setConfAlertAcceptText] = React.useState("");
   const [confTitleAlertText, setConfTitleAlertText] = React.useState("");
 
   const triggerConfAlert = (confAlertText, confTitleAlertText, onAcceptCallback) => {
     setConfAlertAcceptText(confAlertText);
     setConfTitleAlertText(confTitleAlertText);
-    setConfAlertOnAcceptCallback(() => {return onAcceptCallback})
+    setConfAlertOnAcceptCallback(() => { return onAcceptCallback })
     setConfAlert(true);
   }
 
@@ -122,10 +122,10 @@ export function Home() {
   const triggerDeleteReservation = (ReservationId) => {
     const deleteReservation = () => {
       request.sendRequestForDeleteReservation(userProfile.token, ReservationId)
-      .then(() => {
-        updateParkingSlots();
-        updateMyReservations();
-      });
+        .then(() => {
+          updateParkingSlots();
+          updateMyReservations();
+        });
     }
     triggerConfAlert("Delete", "Delete reservation: " + ReservationId, deleteReservation)
   }
@@ -160,7 +160,7 @@ export function Home() {
                       </Typography>
                     </div>
                     <IconButton aria-label="Delete" edge="end">
-                      <DeleteForever 
+                      <DeleteForever
                         onClick={() => triggerDeleteReservation(item.ReservationId)}
                         color="error" />
                     </IconButton>
@@ -186,7 +186,11 @@ export function Home() {
               (myreservations.find(item => item.ReservationDate === formatDate(selectedDate))) ?
                 <CardTemplate item={myreservations.find(item => item.ReservationDate === formatDate(selectedDate))} index={0} />
                 :
-                <></>
+                <Card key={0} style={{ marginBottom: '1vh' }}>
+                  <CardContent>
+                    <Typography>There is no reservation for {formatDate(selectedDate)}!</Typography>
+                  </CardContent>
+              </Card>
             )
         }
       </>
@@ -322,14 +326,14 @@ export function Home() {
       setShowReservationOpen(false);
     }
 
-    
+
     const performDeleteReservation = () => {
-      
+
       const ReservationId = myreservations.find(item => item.ReservationDate === formatDate(selectedDate)).ReservationId;
       if (!ReservationId) {
         handleOnClose()
       }
-      
+
       triggerDeleteReservation(ReservationId)
       handleOnClose()
     }
@@ -517,7 +521,7 @@ export function Home() {
         </div>
         <div style={CENTER_STYLE}>
           <Typography variant='h6'>
-            {showAllReservations ? "All reservations:" : "Today reservation:"}
+            {showAllReservations ? "All reservations:" : "Reservation for " + formatDate(selectedDate) + ":"}
           </Typography>
         </div>
         <div style={CENTER_STYLE}>
