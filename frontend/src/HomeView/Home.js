@@ -26,7 +26,6 @@ export function Home() {
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [myreservations, setMyReservations] = useState([]);
   const [showAllReservations, setShowAllReservations] = useState(false);
-
   const formatDate = (date) => {
     return date.toLocaleDateString('pl-PL', { day: '2-digit', month: '2-digit', year: 'numeric' });
   };
@@ -41,28 +40,6 @@ export function Home() {
 
   const changeReservationCardView = () => {
     setShowAllReservations(!showAllReservations);
-  }
-
-  const getCurrentReservationIdx = () => {
-    const reservationIdx = myreservations.findIndex((reservItem) => {
-      if (formatDate(selectedDate) === reservItem.ReservationDate)
-        return true;
-      return false;
-    })
-
-    if (reservationIdx === -1) {
-      return null
-    }
-
-    return reservationIdx
-  }
-
-  const getCurrentReservation = () => {
-    const idx = getCurrentReservationIdx()
-    if (idx)
-      return myreservations[idx]
-    else
-      return null
   }
 
   const MyReservations = () => {
@@ -115,7 +92,12 @@ export function Home() {
               ))}
             </div>
             :
-            <CardTemplate item={getCurrentReservation()} index={0} />
+            (
+              (myreservations.find(item => item.ReservationDate === formatDate(selectedDate))) ?
+              <CardTemplate item={myreservations.find(item => item.ReservationDate === formatDate(selectedDate))} index={0} />
+              :
+              <></>
+            )
         }
       </>
     )
@@ -246,7 +228,7 @@ export function Home() {
 
     const performDeleteReservation = () => {
 
-      const ReservationId = myreservations[getCurrentReservationIdx()].ReservationId;
+      const ReservationId = myreservations.find(item => item.ReservationDate === formatDate(selectedDate)).ReservationId;
       if (!ReservationId) {
         handleOnClose()
       }
@@ -259,9 +241,9 @@ export function Home() {
     }
 
     const getReservationId = () => {
-      const idx = getCurrentReservationIdx();
-      if (idx) {
-        return myreservations[idx].ReservationId
+      const value = myreservations.find(item => item.ReservationDate === formatDate(selectedDate));
+      if (value) {
+        return value.ReservationId
       }
       else
         return ""
