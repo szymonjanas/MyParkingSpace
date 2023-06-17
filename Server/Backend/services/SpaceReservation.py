@@ -95,6 +95,8 @@ def parking_slots():
 @Authentication
 def parking_slots_by_date(date):
     requestId = utils.nextRequestId("dateslots_")
+    login, _ = isSessionValid(LOG, requestId, request.headers)
+
     serializedSlots = db.SqlSelectQuery(db.SqlTableName.PARKINGSLOTS) \
                             .select(('*')) \
                             .execute(db.connector)
@@ -107,7 +109,7 @@ def parking_slots_by_date(date):
         abort(400, reason)
 
     reservations = db.SqlSelectQuery(db.SqlTableName.RESERVATIONS) \
-                        .select([Reservation.ParkingSlotId]) \
+                        .select([Reservation.ParkingSlotId, Reservation.Login]) \
                         .where(db.SqlWhere().And({Reservation.ReservationDate: date}).get()) \
                         .execute(db.connector)
     
@@ -118,7 +120,10 @@ def parking_slots_by_date(date):
         isFree = "free"
         for reservation in reservations:
             if slot[ParkingSlot.ParkingSlotId] == reservation[0]:
-                isFree = "mine"
+                if login == reservation[1]:
+                    isFree = "mine"
+                else:
+                    isFree = "taken"
         if slot[ParkingSlot.SlotNumber] == '-1':
             isFree = "taken"
         newSlot["isFree"] = isFree
@@ -176,7 +181,8 @@ def new_reservation():
     isReserved = db.SqlSelectQuery(db.SqlTableName.RESERVATIONS) \
                     .select((Reservation.ParkingSlotId, Reservation.ReservationDate)) \
                     .where(db.SqlWhere() \
-                                .And({ Reservation.ReservationDate: reservation.ReservationDate }).get()) \
+                                .And({ Reservation.ReservationDate: reservation.ReservationDate }) \
+                                .And({ Reservation.ParkingSlotId : reservation.ParkingSlotId}).get()) \
                     .execute(db.connector)
 
     if len(isReserved):
