@@ -6,8 +6,9 @@ import datetime
 import Database as db
 from models.users import User
 import authentication as auth
-from services.common import retreiveAuthorizationToken, validateParameters
+from services.common import retreiveAuthorizationToken, validateParameters, isSessionValid
 from utils import toTuple, nextRequestId
+from authentication import Authentication
 
 api_admissionControlService = Blueprint("Admission Control Service", __name__)
 
@@ -117,13 +118,13 @@ def login():
     message = {'token': token }
     response = Response(json.dumps(message), status=201, mimetype='application/json')
     return response
-    
+
 @api_admissionControlService.route("/api/logout", methods = ['POST'])
 def logout():
     requestId = nextRequestId("logout_")
 
     token = retreiveAuthorizationToken(LOG, requestId, request.headers)
-
+    LOG.info("Logout attempt [{}] with token: {}".format(requestId, token))
     hasRemoved : bool = auth.removeSession(token)
     if not hasRemoved:
         reason = "Session do not exist for token: {}!".format(token)
@@ -132,4 +133,29 @@ def logout():
     
     message = {'message': "Logout complete!" }
     response = Response(json.dumps(message), status=201, mimetype='application/json')
+    return response
+
+@api_admissionControlService.route("/api/user", methods = ['GET'])
+@Authentication
+def get_user_info():
+    requestId = nextRequestId("userinfo_")
+
+    login, _ = isSessionValid(LOG, requestId, request.headers)
+    LOG.info("Get user info attempt [{}] for login: {}".format(requestId, login))
+
+    userDetails = db.SqlSelectQuery(db.SqlTableName.USERS) \
+                    .select([User.RegistrationDate, User.Name, User.Login, User.Email]) \
+                    .where(db.SqlWhere().And({User.Login : login}).get()) \
+                    .execute(db.connector)
+    
+    userDetails = User(
+        userDetails[0][0],
+        userDetails[0][1],
+        userDetails[0][2],
+        "***",
+        userDetails[0][3],
+    ).__dict__
+
+    message = {'user': userDetails }
+    response = Response(json.dumps(message), status=200, mimetype='application/json')
     return response

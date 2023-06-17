@@ -150,6 +150,21 @@ Output **file**: `201 OK`
 image/png <reservationId qrcode>
 ```
 
+### `GET /api/user`
+Input **header**:
+```json
+"Authorization: token <token value>"
+```
+Output **json**: `200 OK`
+```json
+    "user" : {
+        "RegistrationDate" : "text",
+        "Name" : "text",
+        "Login" : "text",
+        "Email" : "text"
+    }
+```
+
 
 ## Running server application and tests
 ---
