@@ -9,7 +9,6 @@ import { CheckCircleOutline, DeleteForever, CalendarMonth, Today } from '@mui/ic
 import { Button, Dialog, DialogTitle, Typography } from '@mui/material';
 import { GarageOutlined } from '@mui/icons-material';
 import * as request from '../requests';
-import { logMessage } from '../Logger';
 import { Card, CardContent, IconButton, } from '@mui/material';
 import { QrCode } from '@mui/icons-material';
 registerLocale('pl', pl)
@@ -48,6 +47,7 @@ export function Home() {
     const reservationIdx = myreservations.findIndex((reservItem) => {
       if (formatDate(selectedDate) === reservItem.ReservationDate)
         return true;
+      return false;
     })
 
     if (reservationIdx === -1) {
@@ -349,6 +349,7 @@ export function Home() {
         if (yItem !== null)
           if (yItem.isFree === 'mine')
             return true;
+        return false;
       }))
     }
 
