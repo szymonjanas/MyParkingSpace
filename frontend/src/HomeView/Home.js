@@ -9,7 +9,7 @@ import { CheckCircleOutline, DeleteForever, CalendarMonth, Today } from '@mui/ic
 import { Button, Dialog, DialogTitle, Typography } from '@mui/material';
 import { GarageOutlined } from '@mui/icons-material';
 import * as request from '../requests';
-import { Card, CardContent, IconButton, } from '@mui/material';
+import { Card, CardContent, IconButton, DialogContent, DialogActions } from '@mui/material';
 import { QrCode } from '@mui/icons-material';
 registerLocale('pl', pl)
 setDefaultLocale('pl')
@@ -26,6 +26,55 @@ export function Home() {
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [myreservations, setMyReservations] = useState([]);
   const [showAllReservations, setShowAllReservations] = useState(false);
+
+  const [openConfAlert, setConfAlert] = React.useState(false);
+  const [onConfAlertAcceptCallback, setConfAlertOnAcceptCallback] = React.useState(() => {return () => {}});
+  const [confAlertAcceptText, setConfAlertAcceptText] = React.useState("");
+  const [confTitleAlertText, setConfTitleAlertText] = React.useState("");
+
+  const triggerConfAlert = (confAlertText, confTitleAlertText, onAcceptCallback) => {
+    setConfAlertAcceptText(confAlertText);
+    setConfTitleAlertText(confTitleAlertText);
+    setConfAlertOnAcceptCallback(() => {return onAcceptCallback})
+    setConfAlert(true);
+  }
+
+  const ConfirmationAlert = () => {
+
+    const triggerClose = () => {
+      setConfAlert(false)
+    };
+
+    const triggerAccept = () => {
+      onConfAlertAcceptCallback()
+      triggerClose();
+    }
+
+    return (
+      <>
+        <Dialog
+          open={openConfAlert}
+          onClose={triggerClose}
+          aria-labelledby="alert-dialog-title"
+          aria-describedby="alert-dialog-description"
+        >
+          <DialogTitle id="alert-dialog-title">
+            {confTitleAlertText}
+          </DialogTitle>
+          <DialogActions style={{ display: 'flex', justifyContent: 'center' }}>
+            <Button onClick={triggerClose} autoFocus>
+              Cancel
+            </Button>
+            <Button onClick={triggerAccept} href="/" style={{ marginLeft: '2vh' }} >
+              {confAlertAcceptText}
+            </Button>
+          </DialogActions>
+
+        </Dialog>
+      </>
+    );
+  }
+
   const formatDate = (date) => {
     return date.toLocaleDateString('pl-PL', { day: '2-digit', month: '2-digit', year: 'numeric' });
   };
@@ -42,8 +91,35 @@ export function Home() {
     setShowAllReservations(!showAllReservations);
   }
 
-  const MyReservations = () => {
+  const [openQrDialog, setOpenQrDialog] = useState(false);
+  const [qrCodeImg, setQrCodeImg] = useState(null)
 
+  const triggerQrCodeDialog = (reservation) => {
+    request.sendRequestForGetReservationQrCode(userProfile.token, reservation.ReservationId)
+      .then((image) => {
+        setQrCodeImg(URL.createObjectURL(image));
+      })
+    setOpenQrDialog(true);
+  }
+
+  const QrCodeDialog = ({ imageUrl }) => {
+
+    const handleClose = () => {
+      setOpenQrDialog(false);
+    };
+
+    return (
+      <>
+        <Dialog open={openQrDialog} onClose={handleClose}>
+          <DialogContent>
+            <img src={qrCodeImg} alt="QrCode" />
+          </DialogContent>
+        </Dialog>
+      </>
+    );
+  };
+
+  const MyReservations = () => {
     const CardTemplate = ({ item, index }) => {
       return (
         <>
@@ -55,7 +131,8 @@ export function Home() {
                 <CardContent>
                   <div style={{ display: 'flex', alignItems: 'center' }}>
                     <IconButton aria-label="Generate QR Code">
-                      <QrCode color="primary" />
+                      <QrCode color="primary"
+                        onClick={() => triggerQrCodeDialog(item)} />
                     </IconButton>
                     <div style={{ marginRight: '2vh', marginLeft: '2vh' }}>
                       <Typography >
@@ -94,9 +171,9 @@ export function Home() {
             :
             (
               (myreservations.find(item => item.ReservationDate === formatDate(selectedDate))) ?
-              <CardTemplate item={myreservations.find(item => item.ReservationDate === formatDate(selectedDate))} index={0} />
-              :
-              <></>
+                <CardTemplate item={myreservations.find(item => item.ReservationDate === formatDate(selectedDate))} index={0} />
+                :
+                <></>
             )
         }
       </>
@@ -158,11 +235,17 @@ export function Home() {
           "ReservationDate": selectedDate === null ? "" : formatDate(selectedDate)
         }
       }
-      request.sendRequestForNewReservation(userProfile.token, reservation)
-        .then(() => {
-          updateParkingSlots();
-          updateMyReservations();
-        });
+      const newReservation = () => {
+        request.sendRequestForNewReservation(userProfile.token, reservation)
+          .then(() => {
+            updateParkingSlots();
+            updateMyReservations();
+          });
+      }
+      triggerConfAlert(
+        "Reserve",
+        "Confirm reservation: " + reservation["reservation"]["ParkingSlotId"] + ", date: " + reservation["reservation"]["ReservationDate"],
+        newReservation)
       handleOnClose()
     }
 
@@ -226,17 +309,24 @@ export function Home() {
       setShowReservationOpen(false);
     }
 
+    
     const performDeleteReservation = () => {
-
+      
       const ReservationId = myreservations.find(item => item.ReservationDate === formatDate(selectedDate)).ReservationId;
       if (!ReservationId) {
         handleOnClose()
       }
-      request.sendRequestForDeleteReservation(userProfile.token, ReservationId)
+      
+      
+      const deleteReservation = () => {
+        request.sendRequestForDeleteReservation(userProfile.token, ReservationId)
         .then(() => {
           updateParkingSlots();
           updateMyReservations();
         });
+      }
+      triggerConfAlert("Delete", "Delete reservation: " + ReservationId, deleteReservation)
+      
       handleOnClose()
     }
 
@@ -422,23 +512,25 @@ export function Home() {
           </Button>
         </div>
         <div style={CENTER_STYLE}>
-        <Typography variant='h6'>
-          {showAllReservations ? "All reservations:" : "Today reservation:"}
-        </Typography>
-      </div>
-      <div style={CENTER_STYLE}>
-        <MyReservations />
-      </div>
-      <hr style={{ width: '50%', margin: '0 auto', marginTop: "2vh", marginBottom: "2vh" }} />
-      <div style={CENTER_STYLE}>
-        <Calendar />
-      </div>
-      <div style={CENTER_STYLE}>
-        <ParkingSlots />
-      </div>
-    </ContentBox >
+          <Typography variant='h6'>
+            {showAllReservations ? "All reservations:" : "Today reservation:"}
+          </Typography>
+        </div>
+        <div style={CENTER_STYLE}>
+          <MyReservations />
+        </div>
+        <hr style={{ width: '50%', margin: '0 auto', marginTop: "2vh", marginBottom: "2vh" }} />
+        <div style={CENTER_STYLE}>
+          <Calendar />
+        </div>
+        <div style={CENTER_STYLE}>
+          <ParkingSlots />
+        </div>
+      </ContentBox >
       <NewReservationForm />
       <ShowReservationForm />
+      <QrCodeDialog />
+      <ConfirmationAlert />
     </>
   );
 

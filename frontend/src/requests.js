@@ -282,31 +282,19 @@ export async function sendRequestForDeleteReservation(token, reservationId) {
 // return <img src={imageUrl} alt="PNG Image" />;
 export async function sendRequestForGetReservationQrCode(token, reservationId) {
 
-    return await requestToServer('/api/reservation/'+ reservationId,
+    return await requestToServer('/api/reservation/qr/'+ reservationId,
         {
             headers: {
                 'Content-Type': 'application/json',
-                'Accept': 'application/json',
+                'Accept': 'image/png',
                 'Access-Control-Allow-Origin': '*',
                 'Access-Control-Allow-Headers': 'Origin, X-Requested-With, Content-Type, Accept',
                 'Authorization': "token " + token
             },
             mode: 'no-cors',
-            method: 'DELETE',
+            method: 'GET',
             redirect: 'follow'
         }
     )
-        .then(function (response) {
-            return response.json();
-        })
-        .then(function (myJson) {
-            if (myJson["error"]) {
-                logMessage("error", myJson["error"]);
-                return false;
-            }
-            else {
-                logMessage("success", "Reservation deleted!");
-                return true;
-            }
-        });
+        .then(response => response.blob());
 }
