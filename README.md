@@ -9,45 +9,69 @@ Project will likely be abandon as soon as we receive a grade.
 
 ---
 
-Scope:
-- Backend: python3 + flask
-- Frontend: react + MUI
-- Database: SQLite3
-- CI/CD: github actions
+Application run and tested under `ubuntu-20.04`.
+
+Current version: `v0.9`
+
+---
+
+### Description:
+```
+Fullstack application to reserve parking slot for a day and generate parking access code.
+Allow user to register, login, pick a date, pick a slot, and create, view or delete reservation.
+```
+
+### Scope
+- `Backend: python3 + flask`
+- `Frontend: react + MUI`
+- `Database: SQLite3`
+- `CI: github actions`
+ 
+### Pages
+
+- [APPLICATION SCREENSHOTS](docs/SCREENSHOTS.md)
+
+- [BACKEND API ROUTES](docs/ROUTES.md)
+
+- [BUILD AND RUN APPLICATION](docs/RUN_APPLICATION.md)
+
+---
 
 ## Services Description
 ### Admission Control Service
 **Responsibilities:**
-- Login and Register Blueprints - API,
-- Generate session key and save it in local storage,
-- Check session duration - remove key from local storage on timeout (session timer is equal zero),
-- Decrement session timer every (1) minute,
-- Provide container with current sessions, date/time of generation, time to expire,
+- login and register user,
+- generate session key and save it in local storage,
+- remove key from local storage on logout,
+- provide container with current sessions.
+
 ### Space Reservation Service
+
 **Responsibilities:**
-- check if space (SpaceId) is available at given date/time range,
-- reservation is possible in 15 min blocks for specific day,
-pre-reservation during check - has to be confirmed in 15 min, generate ReservationId, pre-reservation is stored in local storage (ReservationContext) until it's confirmed - then is moved to database,
-- make a reservation with ReservationId, for UserProfileId. Save in database reservation made for
-| ReservationId | UserProfileId | Date | Time Start | Time End |
-- after reservation is saved to database, ReservationId is send via email with QR Code included,
+- check if parking slot is available at given date (format `dd.mm.yyyy`),
+- reservation is possible in for specific day and slot,
+- create reservation for user,
+- delete reservation for user,
+- after reservation is saved to database: email notification is sent with QR Code included,
+- after reservation is deleted from database: email notification is sent.
+
 ### Entry QR Code Generation Service
 **Responsibilities:**
-- based on confirmed reservation generate QR code for ReservationId,
+- based on confirmed reservation generate QR code from ReservationId,
 ### Email Sender Service
 **Responsibilities:**
-- creating and sending email with QR Code picture encoded,
+- creating and sending email notification with QR Code picture included,
 
-### DATABASE
-TABLE: **USERS**
+## Database tables description
+- TABLE: **USERS**
+    |RegistrationDate|Name|Login|Password|Email|
+    |---|---|---|---|---|
 
-`|RegistrationDate|Name|Login|Password|Email|`
 
-TABLE: **RESERVATIONS**
+- TABLE: **RESERVATIONS**
+    |ReservationId|ParkingSlotId|Login|ReservationDate|ReservationMadeDateTime|
+    |---|---|---|---|---|
 
-`|ReservationId|ParkingSlotId|Login|ReservationDate|ReservationMadeDateTime|`
-
-TABLE: **PARKINGSLOTS**
-`|ParkingSlotId|SlotNumber|Floor|PositionX|PositionY|`
-
-[AdmissionControlClassDiagram](docs/diagrams/AdmissionControlClassDiagram.md)
+- TABLE: **PARKINGSLOTS**
+    |ParkingSlotId|SlotNumber|Floor|PositionX|PositionY|
+    |---|---|---|---|---|

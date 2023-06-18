@@ -7,3 +7,4 @@ Server/logs/*.png
 venv/
 Server.egg-info/
 frontend/build
+.note.txt
