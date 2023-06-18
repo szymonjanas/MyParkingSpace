@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { AppBar, Button, Container, Dialog, DialogContent, DialogTitle, Link, Toolbar, Typography } from "@mui/material";
+import { AppBar, Button, Container, Dialog, DialogContent, Link, Toolbar, Typography } from "@mui/material";
 import { AccountCircle, Logout, GarageOutlined } from '@mui/icons-material';
 import { Box } from '@mui/system';
 import { useProfile } from './database/UserProfile';
