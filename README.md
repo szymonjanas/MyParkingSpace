@@ -2,6 +2,7 @@
 ```
 MyParkingSpace is a project for University Classes.
 Project will likely be abandon as soon as we receive a grade.
+Edit: We got 5.0 🥇
 ```
 
 [![Backend System Tests](https://github.com/szymonjanas/MyParkingSpace/actions/workflows/backend-system-tests.yml/badge.svg)](https://github.com/szymonjanas/MyParkingSpace/actions/workflows/backend-system-tests.yml)
